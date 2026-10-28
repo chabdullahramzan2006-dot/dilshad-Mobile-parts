@@ -1,0 +1,693 @@
+{
+  "admins": [
+    {
+      "_id": "id_mvqwo1aq_t4pnz",
+      "name": "Dilshad Khan",
+      "email": "dilshad@gmail.com",
+      "passwordHash": "$2b$10$Ra.1dorukaXPEj/IcYmUX.PWtoCVaZMJZyMFHnuFPrr0iOILQJe8.",
+      "role": "admin",
+      "mustChangePassword": false,
+      "securityQuestion": "What is your shop name?",
+      "securityAnswerHash": "$2b$10$4WJ4wiXDous429QilPEIa.kuHS75aWzr1dUTboRZqW6xOFOsyPSY2",
+      "createdAt": "2026-10-27T16:34:12.313Z",
+      "updatedAt": "2026-10-27T16:55:54.294Z"
+    }
+  ],
+  "categories": [
+    {
+      "_id": "id_mvqwo1cp_ehjcm",
+      "name": "Charging Flex Cables",
+      "slug": "charging-flex",
+      "description": "Sub-boards, charging pin flex, mic & data strips",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_xjo3q",
+      "name": "LCD & OLED Displays",
+      "slug": "lcd-displays",
+      "description": "Complete folder, OLED & IPS screens",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_urvyh",
+      "name": "Batteries",
+      "slug": "batteries",
+      "description": "High-capacity internal phone replacement batteries",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_mpnwx",
+      "name": "Back Housings & Glass",
+      "slug": "housings-glass",
+      "description": "Rear glass, full body frames & side panels",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_1nfj5",
+      "name": "Camera Modules & Lens",
+      "slug": "camera-modules",
+      "description": "Front & rear camera modules, sapphire lens",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_xg4qy",
+      "name": "Touch Digitizers & OCA",
+      "slug": "touch-oca",
+      "description": "External front glass and OCA laminating sheets",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_4gwd6",
+      "name": "Speakers & Ear-pieces",
+      "slug": "speakers",
+      "description": "Buzzer ringers, ear-speakers, vibrators",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    },
+    {
+      "_id": "id_mvqwo1cp_uo0vt",
+      "name": "IC & Motherboard Components",
+      "slug": "motherboard-ic",
+      "description": "Power IC, Charging IC, diodes, capacitors",
+      "productCount": 0,
+      "createdAt": "2026-10-27T16:34:12.313Z"
+    }
+  ],
+  "brands": [
+    {
+      "_id": "id_mvqwo1cq_40295",
+      "name": "Samsung",
+      "slug": "samsung",
+      "description": "Samsung Galaxy Series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_91kzf",
+      "name": "Apple iPhone",
+      "slug": "iphone",
+      "description": "Apple iPhone models",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_ksogb",
+      "name": "Infinix",
+      "slug": "infinix",
+      "description": "Infinix Hot, Note & Zero series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_yo847",
+      "name": "Tecno",
+      "slug": "tecno",
+      "description": "Tecno Spark, Camon & Pova series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_pf51n",
+      "name": "Xiaomi / Redmi",
+      "slug": "xiaomi",
+      "description": "Redmi, Mi & Poco devices",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_f83qt",
+      "name": "Vivo",
+      "slug": "vivo",
+      "description": "Vivo Y & V series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_6lnzz",
+      "name": "Oppo",
+      "slug": "oppo",
+      "description": "Oppo A & Reno series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_mejrx",
+      "name": "Realme",
+      "slug": "realme",
+      "description": "Realme C & Number series",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "products": [
+    {
+      "_id": "id_mvqwo1cq_leef6",
+      "name": "Samsung Galaxy A12 Charging Flex (Sub-board)",
+      "sku": "DMP-CHG-A12",
+      "category": "Charging Flex Cables",
+      "brand": "Samsung",
+      "modelCompatibility": "Samsung Galaxy A12 (SM-A125F, SM-A127F)",
+      "description": "Original quality sub-board with fast charging support & clear microphone.",
+      "purchasePrice": 150,
+      "sellingPrice": 240,
+      "wholesalePrice": 200,
+      "currentStock": 95,
+      "minStockAlert": 15,
+      "supplierName": "Karachi Mobile Parts Wholesale Hub",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [
+        "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=60"
+      ],
+      "notes": "Fast moving item",
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_mgpav",
+      "name": "Infinix Hot 10 Play Battery (BL-58BX)",
+      "sku": "DMP-BAT-HOT10",
+      "category": "Batteries",
+      "brand": "Infinix",
+      "modelCompatibility": "Infinix Hot 10 Play, Hot 9 Play, Smart 5",
+      "description": "6000mAh pure cobalt battery with 6 months shop warranty.",
+      "purchasePrice": 750,
+      "sellingPrice": 1150,
+      "wholesalePrice": 950,
+      "currentStock": 38,
+      "minStockAlert": 10,
+      "supplierName": "Al-Madina Batteries & Displays",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [
+        "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=500&auto=format&fit=crop&q=60"
+      ],
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_a9fpy",
+      "name": "iPhone X OLED Display Assembly (Hard OLED)",
+      "sku": "DMP-LCD-IPX",
+      "category": "LCD & OLED Displays",
+      "brand": "Apple iPhone",
+      "modelCompatibility": "iPhone X (A1865, A1901)",
+      "description": "Deep blacks, high refresh rate, 3D touch responsive with True Tone programming support.",
+      "purchasePrice": 3800,
+      "sellingPrice": 5200,
+      "wholesalePrice": 4600,
+      "currentStock": 12,
+      "minStockAlert": 5,
+      "supplierName": "Karachi Mobile Parts Wholesale Hub",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [
+        "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500&auto=format&fit=crop&q=60"
+      ],
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_k0jhn",
+      "name": "Xiaomi Redmi Note 9 Pro Back Camera Glass",
+      "sku": "DMP-CAM-RN9P",
+      "category": "Camera Modules & Lens",
+      "brand": "Xiaomi / Redmi",
+      "modelCompatibility": "Redmi Note 9 Pro / Note 9S",
+      "description": "Genuine optical grade glass with double sided adhesive sticker.",
+      "purchasePrice": 80,
+      "sellingPrice": 180,
+      "wholesalePrice": 130,
+      "currentStock": 50,
+      "minStockAlert": 10,
+      "supplierName": "Karachi Mobile Parts Wholesale Hub",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [],
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_44lw4",
+      "name": "Tecno Spark 7 Complete LCD Display",
+      "sku": "DMP-LCD-SPK7",
+      "category": "LCD & OLED Displays",
+      "brand": "Tecno",
+      "modelCompatibility": "Tecno Spark 7 (KF6j, PR651)",
+      "description": "Vibrant IPS color display with responsive touch digitizer.",
+      "purchasePrice": 1450,
+      "sellingPrice": 2100,
+      "wholesalePrice": 1800,
+      "currentStock": 3,
+      "minStockAlert": 6,
+      "supplierName": "Karachi Mobile Parts Wholesale Hub",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [],
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_ayfdx",
+      "name": "Vivo Y20 Charging Pin Port Board",
+      "sku": "DMP-CHG-Y20",
+      "category": "Charging Flex Cables",
+      "brand": "Vivo",
+      "modelCompatibility": "Vivo Y20, Y20s, Y12s",
+      "description": "Fast charging sub-board with IC protection.",
+      "purchasePrice": 130,
+      "sellingPrice": 220,
+      "wholesalePrice": 180,
+      "currentStock": 0,
+      "minStockAlert": 10,
+      "supplierName": "Karachi Mobile Parts Wholesale Hub",
+      "purchaseDate": "2026-10-27T16:34:12.314Z",
+      "images": [],
+      "isArchived": false,
+      "customFields": {
+        "warrantyPeriod": "7 Days Check Warranty"
+      },
+      "createdAt": "2026-10-27T16:34:12.314Z",
+      "updatedAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "suppliers": [
+    {
+      "_id": "id_mvqwo1cq_c1xi9",
+      "name": "Karachi Mobile Parts Wholesale Hub",
+      "phone": "0321-9876543",
+      "email": "karachiwholesale@parts.pk",
+      "address": "Star City Mall, Saddar, Karachi",
+      "openingBalance": 0,
+      "totalPurchased": 85000,
+      "totalPaid": 65000,
+      "outstandingBalance": 20000,
+      "notes": "Primary supplier for Charging Flex and Display Folders",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_is5rf",
+      "name": "Al-Madina Batteries & Displays",
+      "phone": "0300-8765432",
+      "address": "Mobile Market, Hall Road, Lahore",
+      "openingBalance": 0,
+      "totalPurchased": 45000,
+      "totalPaid": 45000,
+      "outstandingBalance": 0,
+      "notes": "Original grade batteries supplier",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "purchases": [],
+  "sales": [],
+  "customers": [
+    {
+      "_id": "id_mvqwo1cq_r8rog",
+      "name": "Ali Mobile Repairing Shop",
+      "phone": "0312-3456789",
+      "address": "Shop # 4, Korangi Crossing, Karachi",
+      "openingBalance": 2000,
+      "totalPurchases": 18500,
+      "totalPayments": 13000,
+      "outstandingBalance": 7500,
+      "lastPaymentDate": "2026-10-24T16:34:12.314Z",
+      "dueDate": "2026-11-01T16:34:12.314Z",
+      "status": "Active",
+      "notes": "Regular wholesale technician client. Pays weekly.",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_wsxj3",
+      "name": "Usman Electronics & Lab",
+      "phone": "0333-1122334",
+      "address": "Disco Bakery, Gulshan-e-Iqbal, Karachi",
+      "openingBalance": 0,
+      "totalPurchases": 12400,
+      "totalPayments": 12400,
+      "outstandingBalance": 0,
+      "status": "Settled",
+      "notes": "Always pays instant cash or Easypaisa.",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_1qld1",
+      "name": "Babar Tech Point",
+      "phone": "0345-9988776",
+      "address": "Shop # 8, 1st Floor, Nazimabad No. 2, Karachi",
+      "openingBalance": 1500,
+      "totalPurchases": 9500,
+      "totalPayments": 3000,
+      "outstandingBalance": 8000,
+      "lastPaymentDate": "2026-10-02T16:34:12.314Z",
+      "dueDate": "2026-10-17T16:34:12.314Z",
+      "status": "Overdue",
+      "notes": "Pending payment reminder sent twice. Follow up this week.",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvrqujwe_r5f2u",
+      "name": "rurur",
+      "phone": "32434324324",
+      "address": "sddsfdff",
+      "openingBalance": 0,
+      "totalPurchases": 0,
+      "totalPayments": 0,
+      "outstandingBalance": 0,
+      "status": "Settled",
+      "customFields": {},
+      "createdAt": "2026-10-28T06:39:04.766Z",
+      "updatedAt": "2026-10-28T06:39:04.766Z"
+    }
+  ],
+  "ledgerEntries": [
+    {
+      "_id": "id_mvqwo1cq_yz5ou",
+      "customerId": "id_mvqwo1cq_r8rog",
+      "date": "2026-10-17T16:34:12.314Z",
+      "type": "OPENING_BALANCE",
+      "referenceType": "MANUAL",
+      "description": "Previous Ledger Balance Carried Forward",
+      "debit": 2000,
+      "credit": 0,
+      "balanceAfter": 2000,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_4cbxj",
+      "customerId": "id_mvqwo1cq_r8rog",
+      "date": "2026-10-20T16:34:12.314Z",
+      "type": "PURCHASE",
+      "referenceType": "SALE",
+      "invoiceNumber": "INV-20261019-1001",
+      "description": "Purchased Mobile Parts (5x Samsung A12 Flex, 1x iPhone X OLED)",
+      "debit": 5000,
+      "credit": 0,
+      "balanceAfter": 7000,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_qr65d",
+      "customerId": "id_mvqwo1cq_r8rog",
+      "date": "2026-10-22T16:34:12.314Z",
+      "type": "PAYMENT",
+      "referenceType": "PAYMENT",
+      "description": "Cash Payment Received in Shop",
+      "debit": 0,
+      "credit": 3000,
+      "balanceAfter": 4000,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_5kwxs",
+      "customerId": "id_mvqwo1cq_r8rog",
+      "date": "2026-10-25T16:34:12.314Z",
+      "type": "PURCHASE",
+      "referenceType": "SALE",
+      "invoiceNumber": "INV-20261025-1022",
+      "description": "Additional Purchase (2x Infinix Hot 10 Battery)",
+      "debit": 3500,
+      "credit": 0,
+      "balanceAfter": 7500,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "payments": [],
+  "inventoryMovements": [
+    {
+      "_id": "id_mvqwo1cq_se9am",
+      "productId": "id_mvqwo1cq_leef6",
+      "productName": "Samsung Galaxy A12 Charging Flex (Sub-board)",
+      "sku": "DMP-CHG-A12",
+      "type": "PURCHASE",
+      "quantityChange": 95,
+      "previousStock": 0,
+      "newStock": 95,
+      "reason": "Initial Stock Setup",
+      "performedBy": "Dilshad Admin",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_dzota",
+      "productId": "id_mvqwo1cq_mgpav",
+      "productName": "Infinix Hot 10 Play Battery (BL-58BX)",
+      "sku": "DMP-BAT-HOT10",
+      "type": "PURCHASE",
+      "quantityChange": 38,
+      "previousStock": 0,
+      "newStock": 38,
+      "reason": "Initial Stock Setup",
+      "performedBy": "Dilshad Admin",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_v9sil",
+      "productId": "id_mvqwo1cq_a9fpy",
+      "productName": "iPhone X OLED Display Assembly (Hard OLED)",
+      "sku": "DMP-LCD-IPX",
+      "type": "PURCHASE",
+      "quantityChange": 12,
+      "previousStock": 0,
+      "newStock": 12,
+      "reason": "Initial Stock Setup",
+      "performedBy": "Dilshad Admin",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_x4e93",
+      "productId": "id_mvqwo1cq_k0jhn",
+      "productName": "Xiaomi Redmi Note 9 Pro Back Camera Glass",
+      "sku": "DMP-CAM-RN9P",
+      "type": "PURCHASE",
+      "quantityChange": 50,
+      "previousStock": 0,
+      "newStock": 50,
+      "reason": "Initial Stock Setup",
+      "performedBy": "Dilshad Admin",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_pnl2o",
+      "productId": "id_mvqwo1cq_44lw4",
+      "productName": "Tecno Spark 7 Complete LCD Display",
+      "sku": "DMP-LCD-SPK7",
+      "type": "PURCHASE",
+      "quantityChange": 3,
+      "previousStock": 0,
+      "newStock": 3,
+      "reason": "Initial Stock Setup",
+      "performedBy": "Dilshad Admin",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "expenses": [
+    {
+      "_id": "id_mvqwo1cq_a71n9",
+      "title": "Shop Monthly Rent - October 2026",
+      "category": "Shop Rent",
+      "amount": 25000,
+      "date": "2026-10-12T16:34:12.314Z",
+      "paymentMethod": "Bank Transfer",
+      "description": "Paid via Meezan Bank to Plaza Landlord",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_8xien",
+      "title": "K-Electric Commercial Bill",
+      "category": "Electricity",
+      "amount": 6800,
+      "date": "2026-10-19T16:34:12.314Z",
+      "paymentMethod": "JazzCash",
+      "description": "Consumer ID: 0400012345678",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_3z9ka",
+      "title": "Bubble Wrap & Tape Packaging Cartons",
+      "category": "Packaging",
+      "amount": 1800,
+      "date": "2026-10-23T16:34:12.314Z",
+      "paymentMethod": "Cash",
+      "description": "Purchased from Bolton Market for flex packing",
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "customFields": [
+    {
+      "_id": "id_mvqwo1cq_7al08",
+      "entityType": "Product",
+      "fieldName": "warrantyPeriod",
+      "fieldLabel": "Warranty Duration",
+      "fieldType": "dropdown",
+      "options": [
+        "No Warranty",
+        "7 Days Check Warranty",
+        "30 Days Testing Warranty",
+        "6 Months"
+      ],
+      "isRequired": false,
+      "defaultValue": "7 Days Check Warranty",
+      "order": 1,
+      "isActive": true,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_1ds2y",
+      "entityType": "Sale",
+      "fieldName": "salesmanName",
+      "fieldLabel": "Salesperson",
+      "fieldType": "dropdown",
+      "options": [
+        "Dilshad (Owner)",
+        "Ahmed (Counter)",
+        "Kashif (Technician)"
+      ],
+      "isRequired": false,
+      "defaultValue": "Dilshad (Owner)",
+      "order": 1,
+      "isActive": true,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_2a0ux",
+      "entityType": "Customer",
+      "fieldName": "cnicNumber",
+      "fieldLabel": "Customer CNIC",
+      "fieldType": "text",
+      "isRequired": false,
+      "order": 1,
+      "isActive": true,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "productPosts": [
+    {
+      "_id": "id_mvqwo1cq_jb0e1",
+      "title": "Original Grade iPhone & Samsung Replacement Displays",
+      "images": [
+        "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=500&auto=format&fit=crop&q=60"
+      ],
+      "description": "Premium OLED screens tested with TrueTone color profiling. Special discount for wholesale technicians.",
+      "price": 5200,
+      "isFeatured": true,
+      "isPublished": true,
+      "bannerText": "Fresh Stock Arrival from Dubai",
+      "order": 1,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    },
+    {
+      "_id": "id_mvqwo1cq_f9l0q",
+      "title": "Fast Charging Flex Cables for All Infinix & Tecno Models",
+      "images": [
+        "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=500&auto=format&fit=crop&q=60"
+      ],
+      "description": "Full range of sub-boards with microphone, headphone jack, and IC fast charge protection.",
+      "price": 240,
+      "isFeatured": true,
+      "isPublished": true,
+      "bannerText": "Hot Selling Items",
+      "order": 2,
+      "createdAt": "2026-10-27T16:34:12.314Z"
+    }
+  ],
+  "settings": {
+    "shopName": "Dilshad Mobile Parts",
+    "shopLogo": "",
+    "address": "Shop # 12, Basement, Mobile City Plaza, Saddar, Karachi",
+    "phone": "+92 300 2345678",
+    "email": "dilshad@gmail.com",
+    "currencySymbol": "Rs.",
+    "defaultLowStockAlert": 5,
+    "invoicePrefix": "INV",
+    "invoiceFooterNotes": "Mobile parts checked before sale. No warranty on flex cables without tester seal.",
+    "termsAndConditions": "1. Return or exchange within 3 days with original seal.\n2. Burnt or physically broken parts carry no warranty.",
+    "allowNegativeStock": false,
+    "defaultPaymentMethod": "Cash",
+    "createdAt": "2026-10-27T16:34:12.146Z",
+    "updatedAt": "2026-10-27T16:34:12.148Z"
+  },
+  "auditLogs": [
+    {
+      "_id": "id_mvrqujwg_euw0v",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "CUSTOMER_CREATED",
+      "entityType": "Customer",
+      "entityId": "id_mvrqujwe_r5f2u",
+      "details": "Created customer: rurur (32434324324)",
+      "createdAt": "2026-10-28T06:39:04.768Z"
+    },
+    {
+      "_id": "id_mvrqtbrk_63hs0",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvqwo1aq_t4pnz",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-28T06:38:07.568Z"
+    },
+    {
+      "_id": "id_mvqyx0pr_c2nd8",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_FAILED",
+      "entityType": "Admin",
+      "details": "Incorrect password attempt",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.28000.3231",
+      "createdAt": "2026-10-27T17:37:10.623Z"
+    },
+    {
+      "_id": "id_mvqyrr9e_2np8e",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_FAILED",
+      "entityType": "Admin",
+      "details": "Incorrect password attempt",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.28000.3231",
+      "createdAt": "2026-10-27T17:33:05.090Z"
+    },
+    {
+      "_id": "id_mvqyqbyr_s7bjh",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_FAILED",
+      "entityType": "Admin",
+      "details": "Incorrect password attempt",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.28000.3231",
+      "createdAt": "2026-10-27T17:31:58.611Z"
+    },
+    {
+      "_id": "id_mvqxfxz8_pvxm2",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PASSWORD_CHANGED",
+      "entityType": "Admin",
+      "entityId": "id_mvqwo1aq_t4pnz",
+      "details": "Password successfully updated",
+      "createdAt": "2026-10-27T16:55:54.308Z"
+    },
+    {
+      "_id": "id_mvqxffin_medge",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvqwo1aq_t4pnz",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-27T16:55:30.383Z"
+    }
+  ]
+}
