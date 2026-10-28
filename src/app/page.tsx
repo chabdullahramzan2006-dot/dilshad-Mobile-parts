@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -66,25 +66,54 @@ import {
   Bar,
 } from "recharts";
 
-type ActiveTab =
-  | "dashboard"
-  | "pos"
-  | "products"
-  | "purchases"
-  | "sales"
-  | "khata"
-  | "pending"
-  | "expenses"
-  | "profit-loss"
-  | "custom-fields"
-  | "settings";
+const ACTIVE_TABS = [
+  "dashboard",
+  "pos",
+  "products",
+  "purchases",
+  "sales",
+  "khata",
+  "pending",
+  "expenses",
+  "profit-loss",
+  "custom-fields",
+  "settings",
+] as const;
+
+type ActiveTab = (typeof ACTIVE_TABS)[number];
+
+function getTabFromHash(): ActiveTab {
+  const hashTab = window.location.hash.slice(1);
+  return ACTIVE_TABS.find((tab) => tab === hashTab) ?? "dashboard";
+}
+
+function subscribeToTabNavigation(onStoreChange: () => void) {
+  window.addEventListener("popstate", onStoreChange);
+  window.addEventListener("hashchange", onStoreChange);
+
+  return () => {
+    window.removeEventListener("popstate", onStoreChange);
+    window.removeEventListener("hashchange", onStoreChange);
+  };
+}
 
 export default function ShopApp() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
+  const activeTab = useSyncExternalStore(
+    subscribeToTabNavigation,
+    getTabFromHash,
+    () => "dashboard"
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [showUrdu, setShowUrdu] = useState(false);
+
+  const navigateToTab = (tab: ActiveTab) => {
+    if (window.location.hash !== `#${tab}`) {
+      window.history.pushState(null, "", `#${tab}`);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
+  };
 
   // Core Data
   const [dashboardStats, setDashboardStats] = useState<any>(null);
@@ -406,7 +435,7 @@ export default function ShopApp() {
               <button
                 key={item.id}
                 onClick={() => {
-                  setActiveTab(item.id as ActiveTab);
+                  navigateToTab(item.id as ActiveTab);
                   if (window.innerWidth < 1024) setIsSidebarOpen(false);
                 }}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition group ${
@@ -489,7 +518,7 @@ export default function ShopApp() {
 
             {/* Quick POS Sale Button */}
             <button
-              onClick={() => setActiveTab("pos")}
+              onClick={() => navigateToTab("pos")}
               className="px-3 py-1.5 bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -499,7 +528,7 @@ export default function ShopApp() {
             {/* Low stock alert count indicator */}
             {dashboardStats?.lowStockCount > 0 && (
               <button
-                onClick={() => setActiveTab("products")}
+                onClick={() => navigateToTab("products")}
                 className="px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-bold flex items-center gap-1.5"
                 title="Low stock parts require reordering"
               >
@@ -539,13 +568,13 @@ export default function ShopApp() {
 
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setActiveTab("pos")}
+                    onClick={() => navigateToTab("pos")}
                     className="px-4 py-2.5 bg-white text-sky-700 hover:bg-sky-50 rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1.5"
                   >
                     <ShoppingCart className="w-4 h-4" /> Make Quick Sale
                   </button>
                   <button
-                    onClick={() => setActiveTab("khata")}
+                    onClick={() => navigateToTab("khata")}
                     className="px-4 py-2.5 bg-sky-900/40 hover:bg-sky-900/60 border border-white/20 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
                   >
                     <BookOpen className="w-4 h-4" /> Open Khata
@@ -770,7 +799,7 @@ export default function ShopApp() {
                   </div>
 
                   <button
-                    onClick={() => setActiveTab("products")}
+                    onClick={() => navigateToTab("products")}
                     className="mt-4 w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold transition"
                   >
                     View All Products Inventory →
