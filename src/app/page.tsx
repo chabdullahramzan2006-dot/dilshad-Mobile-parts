@@ -179,6 +179,10 @@ export default function ShopApp() {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    document.title = `${shopSettings.shopName} — Complete Shop Management System`;
+  }, [shopSettings.shopName]);
+
   const fetchAllData = async (timeZone = shopSettings.timeZone || "Asia/Karachi") => {
     try {
       const [dashRes, prodRes, custRes, supRes, purRes, saleRes, expRes, catRes, brandRes] =
@@ -313,14 +317,18 @@ export default function ShopApp() {
   // 2. Unauthenticated Login Screen
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-slate-100">
+      <div data-theme={shopSettings.theme || "sky"} className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 text-slate-100">
         <Toaster position="top-right" richColors />
         <div className="w-full max-w-md bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
-              <Boxes className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 mx-auto mb-3 overflow-hidden rounded-2xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/30">
+              {shopSettings.shopLogo ? (
+                <img src={shopSettings.shopLogo} alt="" className="h-full w-full bg-white object-contain p-1" />
+              ) : (
+                <Boxes className="w-8 h-8 text-white" />
+              )}
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Dilshad Mobile Parts</h1>
+            <h1 className="text-2xl font-black text-white tracking-tight">{shopSettings.shopName}</h1>
             <p className="text-xs text-slate-400 mt-1">Complete Shop Management &amp; Digital Khata System</p>
           </div>
 
@@ -398,7 +406,7 @@ export default function ShopApp() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+    <div data-theme={shopSettings.theme || "sky"} className="min-h-screen flex bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       <Toaster position="top-right" richColors />
 
       {/* SIDEBAR NAVIGATION */}
@@ -410,11 +418,15 @@ export default function ShopApp() {
         {/* Branding */}
         <div className="h-16 flex items-center justify-between px-5 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-md shadow-sky-500/20">
-              <Boxes className="w-5 h-5" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-md shadow-sky-500/20 overflow-hidden">
+              {shopSettings.shopLogo ? (
+                <img src={shopSettings.shopLogo} alt="" className="h-full w-full object-contain bg-white" />
+              ) : (
+                <Boxes className="w-5 h-5" />
+              )}
             </div>
             <div>
-              <h2 className="font-bold text-white text-sm tracking-tight leading-tight">Dilshad Parts</h2>
+              <h2 className="max-w-40 truncate font-bold text-white text-sm tracking-tight leading-tight">{shopSettings.shopName}</h2>
               <span className="text-[10px] text-sky-400 font-semibold uppercase tracking-wider">
                 Management System
               </span>
@@ -503,7 +515,7 @@ export default function ShopApp() {
             <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-slate-500">
               <span>{shopSettings.shopName}</span>
               <span>•</span>
-              <span className="font-mono text-slate-400">Karachi, Pakistan (Asia/Karachi)</span>
+              <span className="font-mono text-slate-400">{shopSettings.timeZone || "Asia/Karachi"}</span>
             </div>
           </div>
 
@@ -560,9 +572,14 @@ export default function ShopApp() {
                   <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-xs">
                     Real-time Business Dashboard
                   </span>
-                  <h1 className="text-2xl md:text-3xl font-black tracking-tight mt-2">
-                    Dilshad Mobile Parts — Management System
+                  <div className="mt-2 flex items-center gap-3">
+                  {shopSettings.shopLogo && (
+                    <img src={shopSettings.shopLogo} alt="" className="h-12 w-12 rounded-lg bg-white object-contain p-1" />
+                  )}
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tight">
+                    {shopSettings.shopName} — Management System
                   </h1>
+                  </div>
                   <p className="text-xs text-sky-100 mt-1 max-w-xl">
                     Live inventory tracking, digital customer credit (Khata), cash sales, and financial profit calculations.
                   </p>

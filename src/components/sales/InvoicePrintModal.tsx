@@ -49,7 +49,11 @@ export function InvoicePrintModal({ isOpen, onClose, sale, settings }: InvoicePr
         >
           {/* Header */}
           <div className="flex justify-between items-start border-b border-slate-200 pb-6 mb-6">
-            <div>
+            <div className="flex items-start gap-3">
+              {settings?.shopLogo && (
+                <img src={settings.shopLogo} alt="" className="h-14 w-14 rounded-lg object-contain" />
+              )}
+              <div>
               <h1 className="text-2xl font-black text-sky-950 tracking-tight uppercase">
                 {settings?.shopName || "Dilshad Mobile Parts"}
               </h1>
@@ -59,6 +63,7 @@ export function InvoicePrintModal({ isOpen, onClose, sale, settings }: InvoicePr
               <p className="text-xs font-semibold text-slate-700 mt-1">
                 Phone: {settings?.phone || "+92 300 2345678"} | Email: {settings?.email || "dilshad@gmail.com"}
               </p>
+              </div>
             </div>
             <div className="text-right">
               <span className="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded uppercase tracking-wider mb-2">

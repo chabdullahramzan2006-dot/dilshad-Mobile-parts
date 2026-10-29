@@ -87,6 +87,7 @@ function ensureDB(): DatabaseSchema {
     settings: {
       shopName: "Dilshad Mobile Parts",
       shopLogo: "",
+      theme: "sky",
       address: "Shop # 12, Basement, Mobile City Plaza, Saddar, Karachi",
       timeZone: "Asia/Karachi",
       phone: "+92 300 2345678",
@@ -405,12 +406,12 @@ export async function deleteBrand(id: string): Promise<boolean> {
 // ==========================================
 export async function getSuppliers(): Promise<ISupplier[]> {
   const db = ensureDB();
-  return db.suppliers;
+  return db.suppliers.filter((supplier) => !supplier.isArchived);
 }
 
 export async function getSupplierById(id: string): Promise<ISupplier | null> {
   const db = ensureDB();
-  return db.suppliers.find((s) => s._id === id) || null;
+  return db.suppliers.find((s) => s._id === id && !s.isArchived) || null;
 }
 
 export async function createSupplier(data: Omit<ISupplier, "_id" | "createdAt" | "totalPurchased" | "totalPaid" | "outstandingBalance">): Promise<ISupplier> {
@@ -430,23 +431,13 @@ export async function createSupplier(data: Omit<ISupplier, "_id" | "createdAt" |
   return newSup;
 }
 
-export async function deleteSupplier(id: string): Promise<{ success: boolean; error?: string }> {
+export async function archiveSupplier(id: string): Promise<{ success: boolean; error?: string }> {
   const db = ensureDB();
   const supplier = db.suppliers.find((item) => item._id === id);
   if (!supplier) return { success: false, error: "Supplier not found." };
+  if (supplier.isArchived) return { success: false, error: "Supplier is already archived." };
 
-  const hasPurchaseHistory = db.purchases.some((purchase) => purchase.supplierId === id);
-  const hasPaymentHistory = db.payments.some(
-    (payment) => payment.type === "SUPPLIER_PAYMENT" && payment.supplierId === id
-  );
-  if (hasPurchaseHistory || hasPaymentHistory) {
-    return {
-      success: false,
-      error: "This supplier has purchase or payment records and cannot be deleted.",
-    };
-  }
-
-  db.suppliers = db.suppliers.filter((item) => item._id !== id);
+  supplier.isArchived = true;
   saveDB();
   return { success: true };
 }
@@ -1460,6 +1451,7 @@ export async function deleteProductPost(id: string): Promise<boolean> {
 export async function getShopSettings(): Promise<IShopSettings> {
   const db = ensureDB();
   db.settings.timeZone ||= "Asia/Karachi";
+  db.settings.theme ||= "sky";
   return db.settings;
 }
 
@@ -1469,6 +1461,7 @@ export async function updateShopSettings(updates: Partial<IShopSettings>): Promi
     ...db.settings,
     ...updates,
     timeZone: updates.timeZone || db.settings.timeZone || "Asia/Karachi",
+    theme: updates.theme || db.settings.theme || "sky",
     updatedAt: new Date().toISOString(),
   };
   saveDB();

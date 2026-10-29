@@ -64,6 +64,7 @@ export interface ISupplier {
   totalPurchased: number;
   totalPaid: number;
   outstandingBalance: number;
+  isArchived?: boolean;
   notes?: string;
   customFields?: Record<string, any>;
   createdAt?: string;
@@ -309,6 +310,7 @@ export interface IShopSettings {
   _id?: string;
   shopName: string;
   shopLogo?: string;
+  theme?: "sky" | "emerald" | "violet";
   address: string;
   timeZone?: string;
   phone: string;

@@ -25,6 +25,8 @@ interface SettingsViewProps {
 export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange }: SettingsViewProps) {
   // Shop Settings State
   const [shopName, setShopName] = useState(settings.shopName);
+  const [shopLogo, setShopLogo] = useState(settings.shopLogo || "");
+  const [theme, setTheme] = useState<IShopSettings["theme"]>(settings.theme || "sky");
   const [address, setAddress] = useState(settings.address);
   const [timeZone, setTimeZone] = useState(settings.timeZone || "Asia/Karachi");
   const [phone, setPhone] = useState(settings.phone);
@@ -46,6 +48,11 @@ export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange
   const [restoreFileJson, setRestoreFileJson] = useState("");
 
   const handleSaveShopSettings = async () => {
+    if (!shopName.trim()) {
+      toast.error("Shop name is required.");
+      return;
+    }
+
     setIsSavingShop(true);
     try {
       const res = await fetch("/api/settings", {
@@ -53,6 +60,8 @@ export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           shopName,
+          shopLogo,
+          theme,
           address,
           timeZone,
           phone,
@@ -76,6 +85,32 @@ export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange
     } finally {
       setIsSavingShop(false);
     }
+  };
+
+  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      toast.error("Choose a PNG, JPEG, or WebP image.");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Logo image must be smaller than 2 MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        setShopLogo(reader.result);
+      } else {
+        toast.error("Could not read the selected logo.");
+      }
+    };
+    reader.onerror = () => toast.error("Could not read the selected logo.");
+    reader.readAsDataURL(file);
   };
 
   const handleUpdatePassword = async () => {
@@ -207,6 +242,68 @@ export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange
 
           <div>
             <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Shop Logo
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800">
+                {shopLogo ? (
+                  <img src={shopLogo} alt="Shop logo preview" className="h-full w-full object-contain" />
+                ) : (
+                  <Store className="h-6 w-6 text-slate-400" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={handleLogoChange}
+                  className="w-full text-xs text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-sky-50 file:px-3 file:py-1.5 file:font-semibold file:text-sky-700 hover:file:bg-sky-100"
+                />
+                <p className="mt-1 text-[10px] text-slate-500">PNG, JPEG, or WebP; maximum 2 MB.</p>
+              </div>
+              {shopLogo && (
+                <button
+                  type="button"
+                  onClick={() => setShopLogo("")}
+                  className="rounded-lg px-2 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+
+          <fieldset>
+            <legend className="mb-2 font-semibold text-slate-700 dark:text-slate-300">
+              Accent Color Theme
+            </legend>
+            <div className="grid grid-cols-3 gap-2">
+              {([
+                { id: "sky", label: "Ocean Blue", color: "bg-sky-600" },
+                { id: "emerald", label: "Emerald", color: "bg-emerald-600" },
+                { id: "violet", label: "Violet", color: "bg-violet-600" },
+              ] as const).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setTheme(option.id)}
+                  aria-pressed={theme === option.id}
+                  className={`flex items-center justify-center gap-2 rounded-lg border px-2 py-2 font-semibold transition ${
+                    theme === option.id
+                      ? "border-slate-900 ring-2 ring-slate-300 dark:border-white dark:ring-slate-600"
+                      : "border-slate-200 dark:border-slate-700"
+                  }`}
+                >
+                  <span className={`h-3 w-3 rounded-full ${option.color}`} />
+                  {option.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-[10px] text-slate-500">Save Shop Settings to apply the selected theme.</p>
+          </fieldset>
+
+          <div>
+            <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
               Shop Address (Appears on Printable A4 Invoices)
             </label>
             <input
@@ -230,7 +327,7 @@ export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono"
             />
             <p className="mt-1 text-[10px] text-slate-500">
-              Enter an IANA time zone, e.g. Asia/Karachi (Karachi, Pakistan), Europe/London, or America/New_York.
+              Enter an IANA time zone, e.g. Asia/Karachi, Europe/London, or America/New_York.
             </p>
           </div>
 

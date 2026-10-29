@@ -27,6 +27,21 @@ export async function PUT(req: NextRequest) {
         return NextResponse.json({ error: "Enter a valid IANA time zone, such as Asia/Karachi." }, { status: 400 });
       }
     }
+    if (updates.theme !== undefined && !["sky", "emerald", "violet"].includes(updates.theme)) {
+      return NextResponse.json({ error: "Select one of the available color themes." }, { status: 400 });
+    }
+    if (
+      updates.shopLogo !== undefined &&
+      updates.shopLogo !== "" &&
+      (typeof updates.shopLogo !== "string" ||
+        !/^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(updates.shopLogo) ||
+        updates.shopLogo.length > 2_800_000)
+    ) {
+      return NextResponse.json(
+        { error: "Logo must be a PNG, JPEG, or WebP image smaller than 2 MB." },
+        { status: 400 }
+      );
+    }
 
     const settings = await updateShopSettings(updates);
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getSuppliers, createSupplier, deleteSupplier, logAudit } from "@/services/dataService";
+import { getSuppliers, createSupplier, archiveSupplier, logAudit } from "@/services/dataService";
 
 export async function GET() {
   try {
@@ -51,18 +51,17 @@ export async function DELETE(req: NextRequest) {
     const id = req.nextUrl.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Supplier ID is required" }, { status: 400 });
 
-    const result = await deleteSupplier(id);
+    const result = await archiveSupplier(id);
     if (!result.success) {
-      const status = result.error === "Supplier not found." ? 404 : 409;
-      return NextResponse.json({ error: result.error }, { status });
+      return NextResponse.json({ error: result.error }, { status: 404 });
     }
 
     await logAudit({
       adminEmail: session.email,
-      action: "SUPPLIER_DELETED",
+      action: "SUPPLIER_ARCHIVED",
       entityType: "Supplier",
       entityId: id,
-      details: `Deleted supplier: ${id}`,
+      details: `Archived supplier: ${id}; financial and purchase history retained`,
     });
 
     return NextResponse.json({ success: true });

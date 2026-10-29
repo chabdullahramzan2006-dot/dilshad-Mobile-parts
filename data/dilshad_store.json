@@ -33,7 +33,8 @@
         "Est eaque molestiae"
       ],
       "createdAt": "2026-10-29T07:59:50.082Z",
-      "updatedAt": "2026-10-29T08:00:11.685Z"
+      "updatedAt": "2026-10-29T08:09:38.412Z",
+      "isArchived": true
     }
   ],
   "suppliers": [
@@ -46,6 +47,7 @@
       "totalPurchased": 480,
       "totalPaid": 0,
       "outstandingBalance": 2812,
+      "isArchived": true,
       "createdAt": "2026-10-29T07:59:32.707Z"
     }
   ],
@@ -167,7 +169,7 @@
   ],
   "productPosts": [],
   "settings": {
-    "shopName": "Dilshad Mobile Parts",
+    "shopName": "Dilshad choha",
     "shopLogo": "",
     "address": "lahore",
     "phone": "+92 300 2345678",
@@ -180,10 +182,52 @@
     "allowNegativeStock": false,
     "defaultPaymentMethod": "Cash",
     "createdAt": "2026-10-28T07:25:47.534Z",
-    "updatedAt": "2026-10-29T07:49:42.375Z",
-    "timeZone": "Asia/Karachi"
+    "updatedAt": "2026-10-29T08:07:47.574Z",
+    "timeZone": "Asia/Karachi",
+    "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvt9iv71_pkglj",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_ARCHIVED",
+      "entityType": "Product",
+      "entityId": "id_mvt9698i_3y3kh",
+      "details": "Archived product",
+      "createdAt": "2026-10-29T08:09:38.413Z"
+    },
+    {
+      "_id": "id_mvt9gho7_0cghq",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SETTINGS_UPDATED",
+      "entityType": "ShopSettings",
+      "details": "Updated shop configuration and preferences",
+      "createdAt": "2026-10-29T08:07:47.575Z"
+    },
+    {
+      "_id": "id_mvt9g67o_cctfi",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SETTINGS_UPDATED",
+      "entityType": "ShopSettings",
+      "details": "Updated shop configuration and preferences",
+      "createdAt": "2026-10-29T08:07:32.724Z"
+    },
+    {
+      "_id": "id_mvt9g32q_sri7i",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SETTINGS_UPDATED",
+      "entityType": "ShopSettings",
+      "details": "Updated shop configuration and preferences",
+      "createdAt": "2026-10-29T08:07:28.658Z"
+    },
+    {
+      "_id": "id_mvt9fsz8_qsttc",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SETTINGS_UPDATED",
+      "entityType": "ShopSettings",
+      "details": "Updated shop configuration and preferences",
+      "createdAt": "2026-10-29T08:07:15.572Z"
+    },
     {
       "_id": "id_mvt96pwm_e0c7x",
       "adminEmail": "dilshad@gmail.com",

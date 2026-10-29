@@ -165,11 +165,8 @@ export function PurchasesView({
   };
 
   const handleDeleteSupplier = async (supplier: ISupplier) => {
-    const balanceWarning = supplier.outstandingBalance > 0
-      ? ` This will also remove its opening balance of ${formatPKR(supplier.outstandingBalance)}.`
-      : "";
     if (!window.confirm(
-      `Delete supplier "${supplier.name}"? Suppliers with purchase or payment records cannot be deleted.${balanceWarning}`
+      `Remove "${supplier.name}" from active suppliers? Its purchase history and ${formatPKR(supplier.outstandingBalance)} payable balance will be kept.`
     )) {
       return;
     }
@@ -182,7 +179,7 @@ export function PurchasesView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete supplier.");
 
-      toast.success("Supplier deleted.");
+      toast.success("Supplier archived. Purchase and payable history were kept.");
       await onRefresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to delete supplier.");
