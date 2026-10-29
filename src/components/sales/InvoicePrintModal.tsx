@@ -65,7 +65,7 @@ export function InvoicePrintModal({ isOpen, onClose, sale, settings }: InvoicePr
                 SALES INVOICE
               </span>
               <p className="text-lg font-mono font-bold text-slate-900">{sale.invoiceNumber}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Date: {formatDate(sale.saleDate)}</p>
+              <p className="text-xs text-slate-500 mt-0.5">Date: {formatDate(sale.saleDate, true, settings?.timeZone)}</p>
               <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <CheckCircle className="w-3.5 h-3.5" /> {sale.paymentStatus}
               </div>
@@ -85,7 +85,7 @@ export function InvoicePrintModal({ isOpen, onClose, sale, settings }: InvoicePr
               <p className="text-slate-600">Total Items: <span className="font-bold text-slate-900">{sale.items.length}</span></p>
               <p className="text-slate-600 mt-0.5">Units Sold: <span className="font-bold text-slate-900">{sale.items.reduce((acc, i) => acc + i.quantity, 0)}</span></p>
               {sale.dueDate && (
-                <p className="text-amber-700 font-medium mt-1">Due Date: {formatDate(sale.dueDate, false)}</p>
+                <p className="text-amber-700 font-medium mt-1">Due Date: {formatDate(sale.dueDate, false, settings?.timeZone)}</p>
               )}
             </div>
           </div>

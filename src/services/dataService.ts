@@ -88,6 +88,7 @@ function ensureDB(): DatabaseSchema {
       shopName: "Dilshad Mobile Parts",
       shopLogo: "",
       address: "Shop # 12, Basement, Mobile City Plaza, Saddar, Karachi",
+      timeZone: "Asia/Karachi",
       phone: "+92 300 2345678",
       email: "dilshad@gmail.com",
       currencySymbol: "Rs.",
@@ -427,6 +428,27 @@ export async function createSupplier(data: Omit<ISupplier, "_id" | "createdAt" |
   db.suppliers.push(newSup);
   saveDB();
   return newSup;
+}
+
+export async function deleteSupplier(id: string): Promise<{ success: boolean; error?: string }> {
+  const db = ensureDB();
+  const supplier = db.suppliers.find((item) => item._id === id);
+  if (!supplier) return { success: false, error: "Supplier not found." };
+
+  const hasPurchaseHistory = db.purchases.some((purchase) => purchase.supplierId === id);
+  const hasPaymentHistory = db.payments.some(
+    (payment) => payment.type === "SUPPLIER_PAYMENT" && payment.supplierId === id
+  );
+  if (hasPurchaseHistory || hasPaymentHistory) {
+    return {
+      success: false,
+      error: "This supplier has purchase or payment records and cannot be deleted.",
+    };
+  }
+
+  db.suppliers = db.suppliers.filter((item) => item._id !== id);
+  saveDB();
+  return { success: true };
 }
 
 export async function getPurchases(): Promise<IPurchase[]> {
@@ -1241,9 +1263,22 @@ export async function getFinancialSummary(startDate?: string, endDate?: string):
 }
 
 // Get Dashboard Statistics & Charts Data
-export async function getDashboardStats() {
+export async function getDashboardStats(timeZone = "Asia/Karachi") {
   const db = ensureDB();
   const summary = await getFinancialSummary();
+  const dateFormatter = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  const getDateInTimeZone = (date: Date) => {
+    const parts = dateFormatter.formatToParts(date);
+    const year = parts.find((part) => part.type === "year")?.value;
+    const month = parts.find((part) => part.type === "month")?.value;
+    const day = parts.find((part) => part.type === "day")?.value;
+    return `${year}-${month}-${day}`;
+  };
 
   const totalProducts = db.products.filter((p) => !p.isArchived).length;
   const totalStock = db.products.filter((p) => !p.isArchived).reduce((sum, p) => sum + p.currentStock, 0);
@@ -1251,13 +1286,17 @@ export async function getDashboardStats() {
   const outOfStockCount = db.products.filter((p) => !p.isArchived && p.currentStock <= 0).length;
 
   // Today's Sales
-  const todayStr = new Date().toISOString().split("T")[0];
-  const todaySalesList = db.sales.filter((s) => !s.isReturned && s.saleDate.startsWith(todayStr));
+  const todayStr = getDateInTimeZone(new Date());
+  const todaySalesList = db.sales.filter(
+    (sale) => !sale.isReturned && getDateInTimeZone(new Date(sale.saleDate)) === todayStr
+  );
   const todaySales = todaySalesList.reduce((sum, s) => preciseAdd(sum, s.totalAmount), 0);
 
   // Current Month's Sales
   const currentMonthStr = todayStr.substring(0, 7);
-  const monthlySalesList = db.sales.filter((s) => !s.isReturned && s.saleDate.startsWith(currentMonthStr));
+  const monthlySalesList = db.sales.filter(
+    (sale) => !sale.isReturned && getDateInTimeZone(new Date(sale.saleDate)).startsWith(currentMonthStr)
+  );
   const monthlySales = monthlySalesList.reduce((sum, s) => preciseAdd(sum, s.totalAmount), 0);
 
   // Total Customer Payments Received (directly through payment records)
@@ -1268,12 +1307,18 @@ export async function getDashboardStats() {
   // Daily Sales Trend (Last 7 Days)
   const last7Days: { date: string; sales: number; profit: number; cash: number; credit: number }[] = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const dStr = d.toISOString().split("T")[0];
-    const displayLabel = d.toLocaleDateString("en-PK", { month: "short", day: "numeric" });
+    const todayDate = new Date(`${todayStr}T12:00:00Z`);
+    todayDate.setUTCDate(todayDate.getUTCDate() - i);
+    const dStr = todayDate.toISOString().slice(0, 10);
+    const displayLabel = todayDate.toLocaleDateString("en-PK", {
+      timeZone: "UTC",
+      month: "short",
+      day: "numeric",
+    });
 
-    const daySales = db.sales.filter((s) => !s.isReturned && s.saleDate.startsWith(dStr));
+    const daySales = db.sales.filter(
+      (sale) => !sale.isReturned && getDateInTimeZone(new Date(sale.saleDate)) === dStr
+    );
     const daySalesTotal = daySales.reduce((sum, s) => preciseAdd(sum, s.totalAmount), 0);
     const dayCash = daySales.reduce((sum, s) => preciseAdd(sum, s.paidAmount), 0);
     const dayCredit = daySales.reduce((sum, s) => preciseAdd(sum, s.remainingAmount), 0);
@@ -1414,6 +1459,7 @@ export async function deleteProductPost(id: string): Promise<boolean> {
 // ==========================================
 export async function getShopSettings(): Promise<IShopSettings> {
   const db = ensureDB();
+  db.settings.timeZone ||= "Asia/Karachi";
   return db.settings;
 }
 
@@ -1422,6 +1468,7 @@ export async function updateShopSettings(updates: Partial<IShopSettings>): Promi
   db.settings = {
     ...db.settings,
     ...updates,
+    timeZone: updates.timeZone || db.settings.timeZone || "Asia/Karachi",
     updatedAt: new Date().toISOString(),
   };
   saveDB();

@@ -144,7 +144,7 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
                     <div className="font-mono font-bold text-slate-900 dark:text-white">
                       {sale.invoiceNumber}
                     </div>
-                    <div className="text-[10px] text-slate-400">{formatDate(sale.saleDate)}</div>
+                    <div className="text-[10px] text-slate-400">{formatDate(sale.saleDate, true, settings.timeZone)}</div>
                   </td>
                   <td className="py-3 px-3">
                     <div className="font-semibold text-slate-800 dark:text-slate-200">

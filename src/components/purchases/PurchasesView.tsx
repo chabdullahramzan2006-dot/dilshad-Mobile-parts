@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { IPurchase, ISupplier, IProduct } from "@/types";
+import { IPurchase, ISupplier, IProduct, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import {
@@ -22,13 +22,15 @@ interface PurchasesViewProps {
   purchases: IPurchase[];
   suppliers: ISupplier[];
   products: IProduct[];
-  onRefresh: () => void;
+  settings: IShopSettings;
+  onRefresh: () => Promise<void>;
 }
 
 export function PurchasesView({
   purchases,
   suppliers,
   products,
+  settings,
   onRefresh,
 }: PurchasesViewProps) {
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false);
@@ -49,9 +51,24 @@ export function PurchasesView({
   const [supPhone, setSupPhone] = useState("");
   const [supAddress, setSupAddress] = useState("");
   const [supOpening, setSupOpening] = useState<number | "">("");
+  const [deletingSupplierId, setDeletingSupplierId] = useState<string | null>(null);
+  const resolvedSupplierId = suppliers.some((supplier) => supplier._id === selectedSupplierId)
+    ? selectedSupplierId
+    : suppliers[0]?._id || "";
+  const resolvedPurchaseItems = purchaseItems.map((item) => {
+    const product = products.find((candidate) => candidate._id === item.productId) || products[0];
+    if (!product) return { ...item, productId: "" };
+    if (product._id === item.productId) return item;
+    return {
+      ...item,
+      productId: product._id,
+      unitPurchasePrice: product.purchasePrice,
+      unitSellingPrice: product.sellingPrice,
+    };
+  });
 
   // Calculate Subtotal & Total
-  const subtotal = purchaseItems.reduce((sum, item) => sum + item.quantity * item.unitPurchasePrice, 0);
+  const subtotal = resolvedPurchaseItems.reduce((sum, item) => sum + item.quantity * item.unitPurchasePrice, 0);
   const totalAmount = subtotal + (Number(transportCost) || 0);
   const balanceAmount = Math.max(0, totalAmount - (Number(paidAmount) || 0));
 
@@ -73,8 +90,18 @@ export function PurchasesView({
   };
 
   const handleSavePurchase = async () => {
-    if (!selectedSupplierId || purchaseItems.length === 0) {
+    if (products.length === 0) {
+      toast.error("Add a product in Inventory before recording a purchase.");
+      return;
+    }
+
+    if (!resolvedSupplierId || resolvedPurchaseItems.length === 0) {
       toast.error("Please select a supplier and add at least one item.");
+      return;
+    }
+
+    if (resolvedPurchaseItems.some((item) => !item.productId)) {
+      toast.error("Select a valid product for every purchase item.");
       return;
     }
 
@@ -83,8 +110,8 @@ export function PurchasesView({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          supplierId: selectedSupplierId,
-          items: purchaseItems,
+          supplierId: resolvedSupplierId,
+          items: resolvedPurchaseItems,
           transportationCost: Number(transportCost) || 0,
           paidAmount: Number(paidAmount) || 0,
           paymentMethod,
@@ -97,9 +124,9 @@ export function PurchasesView({
 
       toast.success(`Purchase Invoice #${data.purchase.invoiceNumber} recorded! Stock updated.`);
       setShowAddPurchaseModal(false);
-      onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to record purchase");
+      await onRefresh();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to record purchase");
     }
   };
 
@@ -126,13 +153,41 @@ export function PurchasesView({
 
       toast.success("Supplier created!");
       setShowSupplierModal(false);
+      setSelectedSupplierId(data.supplier._id);
       setSupName("");
       setSupPhone("");
       setSupAddress("");
       setSupOpening("");
-      onRefresh();
-    } catch (err: any) {
-      toast.error(err.message);
+      await onRefresh();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to create supplier.");
+    }
+  };
+
+  const handleDeleteSupplier = async (supplier: ISupplier) => {
+    const balanceWarning = supplier.outstandingBalance > 0
+      ? ` This will also remove its opening balance of ${formatPKR(supplier.outstandingBalance)}.`
+      : "";
+    if (!window.confirm(
+      `Delete supplier "${supplier.name}"? Suppliers with purchase or payment records cannot be deleted.${balanceWarning}`
+    )) {
+      return;
+    }
+
+    setDeletingSupplierId(supplier._id);
+    try {
+      const res = await fetch(`/api/suppliers?id=${encodeURIComponent(supplier._id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete supplier.");
+
+      toast.success("Supplier deleted.");
+      await onRefresh();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete supplier.");
+    } finally {
+      setDeletingSupplierId(null);
     }
   };
 
@@ -170,15 +225,31 @@ export function PurchasesView({
 
       {/* Supplier Outstanding Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 my-5">
-        {suppliers.map((sup) => (
+        {suppliers.length === 0 ? (
+          <div className="col-span-full rounded-xl border border-dashed border-slate-300 dark:border-slate-700 p-6 text-center text-xs text-slate-500">
+            No suppliers yet. Select &quot;Add Supplier&quot; to create your first supplier record.
+          </div>
+        ) : suppliers.map((sup) => (
           <div
             key={sup._id}
             className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col justify-between"
           >
             <div>
               <div className="flex justify-between items-start">
-                <h4 className="font-bold text-xs text-slate-900 dark:text-white">{sup.name}</h4>
-                <span className="text-[10px] font-mono text-slate-400">{sup.phone}</span>
+                <div className="min-w-0">
+                  <h4 className="font-bold text-xs text-slate-900 dark:text-white truncate">{sup.name}</h4>
+                  <span className="text-[10px] font-mono text-slate-400">{sup.phone}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSupplier(sup)}
+                  disabled={deletingSupplierId === sup._id}
+                  aria-label={`Delete supplier ${sup.name}`}
+                  title="Delete supplier"
+                  className="ml-2 shrink-0 rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600 disabled:opacity-50 dark:hover:bg-rose-950/30"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
               <p className="text-[11px] text-slate-500 mt-1 line-clamp-1">{sup.address || "Wholesale Market"}</p>
             </div>
@@ -224,7 +295,7 @@ export function PurchasesView({
                     <div className="font-mono font-bold text-slate-900 dark:text-white">
                       {pur.invoiceNumber}
                     </div>
-                    <div className="text-[10px] text-slate-400">{formatDate(pur.purchaseDate)}</div>
+                    <div className="text-[10px] text-slate-400">{formatDate(pur.purchaseDate, true, settings.timeZone)}</div>
                   </td>
                   <td className="py-3 px-3 font-semibold text-slate-800 dark:text-slate-200">
                     {pur.supplierName}
@@ -270,10 +341,11 @@ export function PurchasesView({
               Select Supplier *
             </label>
             <select
-              value={selectedSupplierId}
+              value={resolvedSupplierId}
               onChange={(e) => setSelectedSupplierId(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
             >
+              {suppliers.length === 0 && <option value="">Add a supplier before recording a purchase</option>}
               {suppliers.map((s) => (
                 <option key={s._id} value={s._id}>
                   {s.name} ({s.phone}) — Balance: Rs. {s.outstandingBalance}
@@ -295,7 +367,15 @@ export function PurchasesView({
               </button>
             </div>
 
-            {purchaseItems.map((row, idx) => (
+            {products.length === 0 ? (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+                No products are available. Add a product in Inventory before recording a stock purchase.
+              </div>
+            ) : resolvedPurchaseItems.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 p-3 text-center text-xs text-slate-500 dark:border-slate-700">
+                No purchase items added. Select &quot;+ Add Item&quot; to add a product.
+              </div>
+            ) : resolvedPurchaseItems.map((row, idx) => (
               <div
                 key={idx}
                 className="grid grid-cols-12 gap-2 items-center p-2.5 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-100 dark:border-slate-700"
@@ -372,8 +452,9 @@ export function PurchasesView({
                   <button
                     type="button"
                     onClick={() => handleRemoveItemRow(idx)}
-                    disabled={purchaseItems.length === 1}
-                    className="text-slate-400 hover:text-rose-600 disabled:opacity-30"
+                    aria-label="Remove purchase item"
+                    title="Remove purchase item"
+                    className="text-slate-400 hover:text-rose-600"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -439,9 +520,10 @@ export function PurchasesView({
 
           <button
             onClick={handleSavePurchase}
-            className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
+            disabled={products.length === 0 || !resolvedSupplierId}
+            className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Save Purchase & Increment Stock
+            {products.length === 0 ? "Add Products Before Recording Purchase" : "Save Purchase & Increment Stock"}
           </button>
         </div>
       </Modal>

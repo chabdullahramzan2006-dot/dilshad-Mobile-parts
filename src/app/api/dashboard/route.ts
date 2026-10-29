@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getDashboardStats, seedInitialDatabase } from "@/services/dataService";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     await seedInitialDatabase();
     const session = await getSession();
@@ -10,10 +10,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const stats = await getDashboardStats();
+    const timeZone = new URL(request.url).searchParams.get("timeZone") || "Asia/Karachi";
+    try {
+      new Intl.DateTimeFormat("en-US", { timeZone });
+    } catch {
+      return NextResponse.json({ error: "Invalid time zone." }, { status: 400 });
+    }
+
+    const stats = await getDashboardStats(timeZone);
     return NextResponse.json({ success: true, ...stats });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Dashboard API error:", error);
-    return NextResponse.json({ error: error.message || "Failed to load dashboard data." }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to load dashboard data." },
+      { status: 500 }
+    );
   }
 }

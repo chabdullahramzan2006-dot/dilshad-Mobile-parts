@@ -6,8 +6,11 @@ export async function GET() {
   try {
     const settings = await getShopSettings();
     return NextResponse.json({ success: true, settings });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to load settings" },
+      { status: 500 }
+    );
   }
 }
 
@@ -17,6 +20,14 @@ export async function PUT(req: NextRequest) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const updates = await req.json();
+    if (updates.timeZone !== undefined) {
+      try {
+        new Intl.DateTimeFormat("en-US", { timeZone: updates.timeZone });
+      } catch {
+        return NextResponse.json({ error: "Enter a valid IANA time zone, such as Asia/Karachi." }, { status: 400 });
+      }
+    }
+
     const settings = await updateShopSettings(updates);
 
     await logAudit({
@@ -27,7 +38,10 @@ export async function PUT(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, settings });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to update settings" },
+      { status: 500 }
+    );
   }
 }

@@ -15,9 +15,71 @@
   ],
   "categories": [],
   "brands": [],
-  "products": [],
-  "suppliers": [],
-  "purchases": [],
+  "products": [
+    {
+      "_id": "id_mvt9698i_3y3kh",
+      "name": "Accusantium dolor ve",
+      "sku": "OPTIO NON IPSUM QUO",
+      "category": "Charging Flex Cables",
+      "brand": "Samsung",
+      "modelCompatibility": "Cumque nulla velit q",
+      "purchasePrice": 48,
+      "sellingPrice": 78,
+      "wholesalePrice": 6,
+      "currentStock": 52,
+      "minStockAlert": 88,
+      "description": "Ducimus nesciunt v",
+      "images": [
+        "Est eaque molestiae"
+      ],
+      "createdAt": "2026-10-29T07:59:50.082Z",
+      "updatedAt": "2026-10-29T08:00:11.685Z"
+    }
+  ],
+  "suppliers": [
+    {
+      "_id": "id_mvt95vtv_u0ejl",
+      "name": "ahksad",
+      "phone": "sasasa",
+      "address": "saasasa23",
+      "openingBalance": 2332,
+      "totalPurchased": 480,
+      "totalPaid": 0,
+      "outstandingBalance": 2812,
+      "createdAt": "2026-10-29T07:59:32.707Z"
+    }
+  ],
+  "purchases": [
+    {
+      "_id": "id_mvt96pwl_6qdsy",
+      "invoiceNumber": "PUR-20261029-9807",
+      "supplierId": "id_mvt95vtv_u0ejl",
+      "supplierName": "ahksad",
+      "purchaseDate": "2026-10-29T08:00:11.685Z",
+      "items": [
+        {
+          "productId": "id_mvt9698i_3y3kh",
+          "productName": "Accusantium dolor ve",
+          "sku": "OPTIO NON IPSUM QUO",
+          "quantity": 10,
+          "unitPurchasePrice": 48,
+          "totalCost": 480,
+          "unitSellingPrice": 78
+        }
+      ],
+      "transportationCost": 0,
+      "otherCosts": 0,
+      "subtotal": 480,
+      "totalAmount": 480,
+      "paidAmount": 0,
+      "balanceAmount": 480,
+      "paymentMethod": "Cash",
+      "status": "Received",
+      "notes": "",
+      "customFields": {},
+      "createdAt": "2026-10-29T08:00:11.685Z"
+    }
+  ],
   "sales": [],
   "customers": [
     {
@@ -50,7 +112,35 @@
     }
   ],
   "payments": [],
-  "inventoryMovements": [],
+  "inventoryMovements": [
+    {
+      "_id": "id_mvt9698i_6obkx",
+      "productId": "id_mvt9698i_3y3kh",
+      "productName": "Accusantium dolor ve",
+      "sku": "OPTIO NON IPSUM QUO",
+      "type": "PURCHASE",
+      "quantityChange": 42,
+      "previousStock": 0,
+      "newStock": 42,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T07:59:50.082Z"
+    },
+    {
+      "_id": "id_mvt96pwl_wnphw",
+      "productId": "id_mvt9698i_3y3kh",
+      "productName": "Accusantium dolor ve",
+      "sku": "OPTIO NON IPSUM QUO",
+      "type": "PURCHASE",
+      "quantityChange": 10,
+      "previousStock": 42,
+      "newStock": 52,
+      "reason": "Stock Purchase Invoice #PUR-20261029-9807",
+      "referenceId": "PUR-20261029-9807",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T08:00:11.685Z"
+    }
+  ],
   "expenses": [
     {
       "_id": "id_mvrsw59d_n5oce",
@@ -63,12 +153,23 @@
       "createdAt": "2026-10-28T07:36:18.337Z"
     }
   ],
-  "customFields": [],
+  "customFields": [
+    {
+      "_id": "id_mvt8y7f8_mha90",
+      "entityType": "Customer",
+      "fieldName": "Vitaesolutaveniam",
+      "fieldLabel": "Eos culpa aliquip",
+      "fieldType": "boolean",
+      "order": 1,
+      "isActive": true,
+      "createdAt": "2026-10-29T07:53:34.484Z"
+    }
+  ],
   "productPosts": [],
   "settings": {
     "shopName": "Dilshad Mobile Parts",
     "shopLogo": "",
-    "address": "Shop # 12, Basement, Mobile City Plaza, Saddar, Karachi",
+    "address": "lahore",
     "phone": "+92 300 2345678",
     "email": "dilshad@gmail.com",
     "currencySymbol": "Rs.",
@@ -79,9 +180,99 @@
     "allowNegativeStock": false,
     "defaultPaymentMethod": "Cash",
     "createdAt": "2026-10-28T07:25:47.534Z",
-    "updatedAt": "2026-10-28T07:25:47.534Z"
+    "updatedAt": "2026-10-29T07:49:42.375Z",
+    "timeZone": "Asia/Karachi"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvt96pwm_e0c7x",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PURCHASE_CREATED",
+      "entityType": "Purchase",
+      "entityId": "id_mvt96pwl_6qdsy",
+      "details": "Purchase #PUR-20261029-9807 from ahksad. Total: Rs. 480",
+      "createdAt": "2026-10-29T08:00:11.686Z"
+    },
+    {
+      "_id": "id_mvt9698k_mn0d1",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvt9698i_3y3kh",
+      "details": "Created product: Accusantium dolor ve (OPTIO NON IPSUM QUO)",
+      "createdAt": "2026-10-29T07:59:50.084Z"
+    },
+    {
+      "_id": "id_mvt95vtw_3f6uk",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt95vtv_u0ejl",
+      "details": "Created supplier: ahksad",
+      "createdAt": "2026-10-29T07:59:32.708Z"
+    },
+    {
+      "_id": "id_mvt94yre_ap2sy",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_DELETED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt94h1s_3lsmi",
+      "details": "Deleted supplier: id_mvt94h1s_3lsmi",
+      "createdAt": "2026-10-29T07:58:49.850Z"
+    },
+    {
+      "_id": "id_mvt94h1u_75od8",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt94h1s_3lsmi",
+      "details": "Created supplier: Illum reprehenderit",
+      "createdAt": "2026-10-29T07:58:26.898Z"
+    },
+    {
+      "_id": "id_mvt945ag_fvx6y",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_DELETED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt8ncvu_dpfxa",
+      "details": "Deleted supplier: id_mvt8ncvu_dpfxa",
+      "createdAt": "2026-10-29T07:58:11.656Z"
+    },
+    {
+      "_id": "id_mvt9384z_zin9d",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_DELETED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt8sek2_webe2",
+      "details": "Deleted supplier: id_mvt8sek2_webe2",
+      "createdAt": "2026-10-29T07:57:28.691Z"
+    },
+    {
+      "_id": "id_mvt8t8bs_qy8m5",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SETTINGS_UPDATED",
+      "entityType": "ShopSettings",
+      "details": "Updated shop configuration and preferences",
+      "createdAt": "2026-10-29T07:49:42.377Z"
+    },
+    {
+      "_id": "id_mvt8sek4_h5cqp",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt8sek2_webe2",
+      "details": "Created supplier: Id eveniet ipsum i",
+      "createdAt": "2026-10-29T07:49:03.796Z"
+    },
+    {
+      "_id": "id_mvt8ncvw_bcpk4",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt8ncvu_dpfxa",
+      "details": "Created supplier: Animi non consectet",
+      "createdAt": "2026-10-29T07:45:08.348Z"
+    },
     {
       "_id": "id_mvrsw59f_qjqj7",
       "adminEmail": "dilshad@gmail.com",

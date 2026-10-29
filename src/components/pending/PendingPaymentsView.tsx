@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ICustomer } from "@/types";
+import { ICustomer, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import {
@@ -20,10 +20,11 @@ import { Modal } from "@/components/ui/Modal";
 
 interface PendingPaymentsViewProps {
   customers: ICustomer[];
+  settings: IShopSettings;
   onRefresh: () => void;
 }
 
-export function PendingPaymentsView({ customers, onRefresh }: PendingPaymentsViewProps) {
+export function PendingPaymentsView({ customers, settings, onRefresh }: PendingPaymentsViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<"ALL" | "OVERDUE">("ALL");
 
@@ -199,7 +200,7 @@ export function PendingPaymentsView({ customers, onRefresh }: PendingPaymentsVie
                     {formatPKR(c.outstandingBalance)}
                   </td>
                   <td className="py-3 px-3 text-slate-500 font-mono text-[10px]">
-                    {c.lastPaymentDate ? formatDate(c.lastPaymentDate, false) : "No payment yet"}
+                    {c.lastPaymentDate ? formatDate(c.lastPaymentDate, false, settings.timeZone) : "No payment yet"}
                   </td>
                   <td className="py-3 px-3 text-center">
                     <span

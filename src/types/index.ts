@@ -310,6 +310,7 @@ export interface IShopSettings {
   shopName: string;
   shopLogo?: string;
   address: string;
+  timeZone?: string;
   phone: string;
   email?: string;
   currencySymbol: string;

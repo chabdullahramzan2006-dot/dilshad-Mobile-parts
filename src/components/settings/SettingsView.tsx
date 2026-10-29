@@ -18,13 +18,15 @@ import { toast } from "sonner";
 interface SettingsViewProps {
   settings: IShopSettings;
   adminEmail: string;
-  onRefresh: () => void;
+  onRefresh: (timeZone?: string) => void;
+  onSettingsChange: (settings: IShopSettings) => void;
 }
 
-export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewProps) {
+export function SettingsView({ settings, adminEmail, onRefresh, onSettingsChange }: SettingsViewProps) {
   // Shop Settings State
   const [shopName, setShopName] = useState(settings.shopName);
   const [address, setAddress] = useState(settings.address);
+  const [timeZone, setTimeZone] = useState(settings.timeZone || "Asia/Karachi");
   const [phone, setPhone] = useState(settings.phone);
   const [email, setEmail] = useState(settings.email || "");
   const [currencySymbol, setCurrencySymbol] = useState(settings.currencySymbol || "Rs.");
@@ -52,6 +54,7 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
         body: JSON.stringify({
           shopName,
           address,
+          timeZone,
           phone,
           email,
           currencySymbol,
@@ -66,9 +69,10 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
       if (!res.ok) throw new Error(data.error);
 
       toast.success("Shop settings updated successfully!");
-      onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update settings");
+      onSettingsChange(data.settings);
+      onRefresh(data.settings.timeZone);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update settings");
     } finally {
       setIsSavingShop(false);
     }
@@ -102,8 +106,8 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update password");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update password");
     } finally {
       setIsUpdatingPassword(false);
     }
@@ -126,8 +130,8 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
       URL.revokeObjectURL(url);
 
       toast.success("Database backup downloaded!");
-    } catch (e: any) {
-      toast.error(e.message || "Backup failed");
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Backup failed");
     }
   };
 
@@ -165,8 +169,8 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
 
       toast.success("Database restored successfully!");
       onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || "Restore failed");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Restore failed");
     }
   };
 
@@ -211,6 +215,23 @@ export function SettingsView({ settings, adminEmail, onRefresh }: SettingsViewPr
               onChange={(e) => setAddress(e.target.value)}
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
             />
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Time Zone / Location
+            </label>
+            <input
+              type="text"
+              value={timeZone}
+              onChange={(e) => setTimeZone(e.target.value.trim())}
+              placeholder="Asia/Karachi"
+              autoComplete="off"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono"
+            />
+            <p className="mt-1 text-[10px] text-slate-500">
+              Enter an IANA time zone, e.g. Asia/Karachi (Karachi, Pakistan), Europe/London, or America/New_York.
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

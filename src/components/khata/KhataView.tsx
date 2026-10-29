@@ -168,7 +168,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
 
     const data = ledgerEntries.map((e, idx) => ({
       "#": idx + 1,
-      Date: formatDate(e.date),
+      Date: formatDate(e.date, true, settings.timeZone),
       Type: e.type,
       Description: e.description,
       "Debit (+ Udhaar)": e.debit,
@@ -350,7 +350,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Last Payment</span>
                 <p className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono mt-0.5">
-                  {selectedCustomer.lastPaymentDate ? formatDate(selectedCustomer.lastPaymentDate, false) : "None"}
+                  {selectedCustomer.lastPaymentDate ? formatDate(selectedCustomer.lastPaymentDate, false, settings.timeZone) : "None"}
                 </p>
               </div>
             </div>
@@ -384,7 +384,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
                   ) : (
                     ledgerEntries.map((entry) => (
                       <tr key={entry._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                        <td className="py-3 px-3 font-mono text-slate-500">{formatDate(entry.date)}</td>
+                        <td className="py-3 px-3 font-mono text-slate-500">{formatDate(entry.date, true, settings.timeZone)}</td>
                         <td className="py-3 px-3">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${

@@ -5,14 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Format date into Pakistan Timezone (Asia/Karachi)
-export function formatDate(date: string | Date | number | undefined | null, includeTime = true): string {
+export function formatDate(
+  date: string | Date | number | undefined | null,
+  includeTime = true,
+  timeZone = "Asia/Karachi"
+): string {
   if (!date) return "-";
   const d = new Date(date);
   if (isNaN(d.getTime())) return "-";
 
   const options: Intl.DateTimeFormatOptions = {
-    timeZone: "Asia/Karachi",
+    timeZone,
     year: "numeric",
     month: "short",
     day: "numeric",

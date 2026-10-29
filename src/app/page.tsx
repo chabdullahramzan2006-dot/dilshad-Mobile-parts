@@ -128,6 +128,7 @@ export default function ShopApp() {
   const [shopSettings, setShopSettings] = useState<IShopSettings>({
     shopName: "Dilshad Mobile Parts",
     address: "Shop # 12, Mobile Market, Saddar, Karachi",
+    timeZone: "Asia/Karachi",
     phone: "+92 300 2345678",
     email: "dilshad@gmail.com",
     currencySymbol: "Rs.",
@@ -165,7 +166,7 @@ export default function ShopApp() {
         if (data.user?.mustChangePassword) {
           setMustChangePassword(true);
         }
-        fetchAllData();
+        fetchAllData(data.settings?.timeZone);
       } else {
         setIsAuthenticated(false);
       }
@@ -178,11 +179,11 @@ export default function ShopApp() {
     checkAuth();
   }, []);
 
-  const fetchAllData = async () => {
+  const fetchAllData = async (timeZone = shopSettings.timeZone || "Asia/Karachi") => {
     try {
       const [dashRes, prodRes, custRes, supRes, purRes, saleRes, expRes, catRes, brandRes] =
         await Promise.all([
-          fetch("/api/dashboard"),
+          fetch(`/api/dashboard?timeZone=${encodeURIComponent(timeZone)}`),
           fetch("/api/products"),
           fetch("/api/customers"),
           fetch("/api/suppliers"),
@@ -302,8 +303,9 @@ export default function ShopApp() {
   if (isAuthenticated === null) {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-900 text-white">
-        <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-sm font-semibold tracking-wide text-sky-400">Loading Dilshad Mobile Parts...</p>
+        <p className="text-sm font-semibold tracking-wide text-sky-400" role="status">
+          Loading Dilshad Mobile Parts...
+        </p>
       </div>
     );
   }
@@ -538,7 +540,7 @@ export default function ShopApp() {
             )}
 
             <button
-              onClick={fetchAllData}
+              onClick={() => fetchAllData()}
               className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
               title="Refresh Data"
             >
@@ -836,6 +838,7 @@ export default function ShopApp() {
               purchases={purchases}
               suppliers={suppliers}
               products={products}
+              settings={shopSettings}
               onRefresh={fetchAllData}
             />
           )}
@@ -852,12 +855,12 @@ export default function ShopApp() {
 
           {/* TAB 7: PENDING PAYMENTS (CREDIT RECOVERY) */}
           {activeTab === "pending" && (
-            <PendingPaymentsView customers={customers} onRefresh={fetchAllData} />
+            <PendingPaymentsView customers={customers} settings={shopSettings} onRefresh={fetchAllData} />
           )}
 
           {/* TAB 8: SHOP EXPENSES */}
           {activeTab === "expenses" && (
-            <ExpensesView expenses={expenses} onRefresh={fetchAllData} />
+            <ExpensesView expenses={expenses} settings={shopSettings} onRefresh={fetchAllData} />
           )}
 
           {/* TAB 9: PROFIT & LOSS STATEMENT */}
@@ -872,6 +875,7 @@ export default function ShopApp() {
               settings={shopSettings}
               adminEmail={currentUser?.email || "dilshad@gmail.com"}
               onRefresh={fetchAllData}
+              onSettingsChange={setShopSettings}
             />
           )}
         </main>

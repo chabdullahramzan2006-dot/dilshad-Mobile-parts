@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { IExpense } from "@/types";
+import { IExpense, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import {
@@ -18,10 +18,11 @@ import { Modal } from "@/components/ui/Modal";
 
 interface ExpensesViewProps {
   expenses: IExpense[];
+  settings: IShopSettings;
   onRefresh: () => void;
 }
 
-export function ExpensesView({ expenses, onRefresh }: ExpensesViewProps) {
+export function ExpensesView({ expenses, settings, onRefresh }: ExpensesViewProps) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -182,7 +183,7 @@ export function ExpensesView({ expenses, onRefresh }: ExpensesViewProps) {
             ) : (
               filteredExpenses.map((exp) => (
                 <tr key={exp._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                  <td className="py-3 px-3 font-mono text-slate-500">{formatDate(exp.date)}</td>
+                  <td className="py-3 px-3 font-mono text-slate-500">{formatDate(exp.date, true, settings.timeZone)}</td>
                   <td className="py-3 px-3">
                     <div className="font-bold text-slate-900 dark:text-white">{exp.title}</div>
                     {exp.description && (
