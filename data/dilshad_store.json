@@ -55,6 +55,13 @@
       "slug": "neque-ullam-omnis-op",
       "productCount": 0,
       "createdAt": "2026-10-29T09:13:56.636Z"
+    },
+    {
+      "_id": "id_mvtc81uv_r46fu",
+      "name": "Et temporibus eu com",
+      "slug": "et-temporibus-eu-com",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:25:12.679Z"
     }
   ],
   "brands": [
@@ -93,6 +100,12 @@
       "name": "Sed quod ad irure es",
       "slug": "sed-quod-ad-irure-es",
       "createdAt": "2026-10-29T09:14:01.652Z"
+    },
+    {
+      "_id": "id_mvtc85q9_qjan5",
+      "name": "Ut accusantium paria",
+      "slug": "ut-accusantium-paria",
+      "createdAt": "2026-10-29T09:25:17.697Z"
     }
   ],
   "products": [
@@ -153,7 +166,8 @@
         "Iure aspernatur et q"
       ],
       "createdAt": "2026-10-29T09:03:40.255Z",
-      "updatedAt": "2026-10-29T09:03:40.255Z"
+      "updatedAt": "2026-10-29T09:24:44.577Z",
+      "isArchived": true
     },
     {
       "_id": "id_mvtbgcmc_7fpm5",
@@ -342,6 +356,23 @@
       "images": [],
       "createdAt": "2026-10-29T09:14:06.656Z",
       "updatedAt": "2026-10-29T09:14:06.656Z"
+    },
+    {
+      "_id": "id_mvtc89lp_r74b5",
+      "name": "pakistan",
+      "sku": "EA IN OBCAECATI NOST",
+      "category": "Et temporibus eu com",
+      "brand": "Ut accusantium paria",
+      "modelCompatibility": "Non eos ad nobis vi",
+      "purchasePrice": 85,
+      "sellingPrice": 70,
+      "wholesalePrice": 52,
+      "currentStock": 65,
+      "minStockAlert": 13,
+      "description": "",
+      "images": [],
+      "createdAt": "2026-10-29T09:25:22.717Z",
+      "updatedAt": "2026-10-29T09:25:22.717Z"
     }
   ],
   "suppliers": [
@@ -628,6 +659,19 @@
       "reason": "Initial Product Creation Stock",
       "performedBy": "Admin",
       "createdAt": "2026-10-29T09:14:06.656Z"
+    },
+    {
+      "_id": "id_mvtc89lp_1c27c",
+      "productId": "id_mvtc89lp_r74b5",
+      "productName": "pakistan",
+      "sku": "EA IN OBCAECATI NOST",
+      "type": "PURCHASE",
+      "quantityChange": 65,
+      "previousStock": 0,
+      "newStock": 65,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:25:22.717Z"
     }
   ],
   "expenses": [
@@ -674,6 +718,24 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvtc8dgz_afzph",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtc89lp_r74b5",
+      "details": "Created product: pakistan (EA IN OBCAECATI NOST)",
+      "createdAt": "2026-10-29T09:25:27.731Z"
+    },
+    {
+      "_id": "id_mvtc7k1k_mjy8c",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_ARCHIVED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcm7_3lj3x",
+      "details": "Archived product",
+      "createdAt": "2026-10-29T09:24:49.592Z"
+    },
     {
       "_id": "id_mvtbtvto_c28lw",
       "adminEmail": "dilshad@gmail.com",

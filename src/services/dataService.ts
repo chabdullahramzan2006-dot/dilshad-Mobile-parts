@@ -228,7 +228,7 @@ async function syncMongoCatalogToLocal() {
   if (migrationProducts.length) {
     await Product.bulkWrite(
       migrationProducts.map((product) => {
-        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
+        const { _id, ...fields } = product;
         return {
           updateOne: {
             filter: { $or: [{ productId: _id }, { sku: product.sku }] },
@@ -240,13 +240,13 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false }
+      { ordered: false, timestamps: false }
     );
   }
   if (db.categories.length) {
     await Category.bulkWrite(
       db.categories.map((category) => {
-        const { _id, createdAt: _createdAt, ...fields } = category;
+        const { _id, ...fields } = category;
         return {
           updateOne: {
             filter: { $or: [{ categoryId: _id }, { slug: category.slug }] },
@@ -258,13 +258,13 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false }
+      { ordered: false, timestamps: false }
     );
   }
   if (db.brands.length) {
     await Brand.bulkWrite(
       db.brands.map((brand) => {
-        const { _id, createdAt: _createdAt, ...fields } = brand;
+        const { _id, ...fields } = brand;
         return {
           updateOne: {
             filter: { $or: [{ brandId: _id }, { slug: brand.slug }] },
@@ -276,7 +276,7 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false }
+      { ordered: false, timestamps: false }
     );
   }
 
@@ -291,16 +291,22 @@ async function persistMongoProducts(products: IProduct[]) {
   if (!(await connectDB()) || products.length === 0) return;
   await Product.bulkWrite(
     products.map((product) => {
-      const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
+      const { _id, ...fields } = product;
       return {
         updateOne: {
           filter: { productId: _id },
-          update: { $set: { ...fields, productId: _id } },
+          update: {
+            $set: {
+              ...fields,
+              productId: _id,
+              updatedAt: new Date(),
+            },
+          },
           upsert: true,
         },
       };
     }),
-    { ordered: false }
+    { ordered: false, timestamps: false }
   );
 }
 
