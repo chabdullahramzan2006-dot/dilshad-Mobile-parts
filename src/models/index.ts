@@ -76,6 +76,7 @@ const ProductSchema = new Schema(
 // --- 5. SUPPLIER MODEL ---
 const SupplierSchema = new Schema(
   {
+    supplierId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true, trim: true },
     phone: { type: String, required: true, trim: true },
     email: { type: String },
@@ -84,6 +85,7 @@ const SupplierSchema = new Schema(
     totalPurchased: { type: Number, default: 0 },
     totalPaid: { type: Number, default: 0 },
     outstandingBalance: { type: Number, default: 0 },
+    isArchived: { type: Boolean, default: false },
     notes: { type: String },
     customFields: { type: Schema.Types.Mixed, default: {} },
   },

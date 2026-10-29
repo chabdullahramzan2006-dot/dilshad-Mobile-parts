@@ -19,6 +19,9 @@ if (!cached) {
 
 export async function connectDB(): Promise<typeof mongoose | null> {
   if (!MONGODB_URI) {
+    if (process.env.VERCEL === "1") {
+      throw new Error("MONGODB_URI is required on Vercel to persist shop data.");
+    }
     return null;
   }
 
@@ -36,7 +39,11 @@ export async function connectDB(): Promise<typeof mongoose | null> {
       console.log("Successfully connected to MongoDB Atlas");
       return mongooseInstance;
     }).catch((err) => {
-      console.warn("MongoDB connection failed, falling back to persistent local storage:", err.message);
+      if (process.env.VERCEL === "1") {
+        cached!.promise = null;
+        throw new Error("MongoDB connection failed. Check MONGODB_URI and Atlas network access.");
+      }
+      console.warn("MongoDB connection failed, falling back to local JSON storage:", err.message);
       cached!.promise = null;
       return null;
     });
@@ -44,8 +51,11 @@ export async function connectDB(): Promise<typeof mongoose | null> {
 
   try {
     cached!.conn = await cached!.promise;
-  } catch (e) {
+  } catch {
     cached!.promise = null;
+    if (process.env.VERCEL === "1") {
+      throw new Error("MongoDB connection failed. Check MONGODB_URI and Atlas network access.");
+    }
     return null;
   }
 

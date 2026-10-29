@@ -38,12 +38,18 @@ not require separate Vercel routes.
 
 The current API data service reads and writes `data/dilshad_store.json` with the
 Node.js filesystem. This is not browser Local Storage, and Vercel function
-filesystems are not a durable database. The application therefore needs a
-persistent database before it can safely manage real shop records on Vercel.
-Although Mongoose and a MongoDB connection helper are present, the data service
-does not currently use them; setting `MONGODB_URI` alone will not enable
-database persistence. Connect the data service to a hosted database and migrate
-the JSON records before relying on production data.
+filesystems are not a durable database. Supplier records use MongoDB when
+`MONGODB_URI` is configured, and the supplier API deliberately returns an error
+on Vercel when the database is unavailable rather than claiming the supplier was
+saved to an ephemeral file. Configure `MONGODB_URI` in Vercel's project
+environment variables and allow the deployment to connect in the MongoDB
+provider's network settings. Existing suppliers in the bundled JSON file are
+copied into MongoDB on first access without replacing already stored supplier
+records.
+
+Other shop records still use the local JSON data service and are not durable on
+Vercel. Migrate all remaining records and operations to the hosted database
+before relying on production sales, inventory, customer, or purchase history.
 
 For production, also configure a strong `JWT_SECRET` in Vercel's environment
 variables and replace the initial admin credentials before using the app.

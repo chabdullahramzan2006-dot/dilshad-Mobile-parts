@@ -21,6 +21,8 @@ import {
   IFinancialSummary,
 } from "@/types";
 import { hashPassword } from "@/lib/auth";
+import { connectDB } from "@/lib/db";
+import { Supplier } from "@/models";
 import { preciseAdd, preciseSubtract, preciseMultiply } from "@/lib/currency";
 import { generateInvoiceNumber } from "@/lib/utils";
 
@@ -404,17 +406,68 @@ export async function deleteBrand(id: string): Promise<boolean> {
 // ==========================================
 // SUPPLIERS & PURCHASES
 // ==========================================
+async function seedMongoSuppliersFromLocalFile() {
+  const mongo = await connectDB();
+  if (!mongo) return null;
+
+  const db = ensureDB();
+  if (db.suppliers.length > 0) {
+    await Supplier.bulkWrite(
+      db.suppliers.map((supplier) => ({
+        updateOne: {
+          filter: { supplierId: supplier._id },
+          update: {
+            $setOnInsert: toMongoSupplierRecord(supplier),
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false }
+    );
+  }
+
+  return mongo;
+}
+
+function toSupplierRecord(value: Record<string, unknown>): ISupplier {
+  const { _id, supplierId, ...supplier } = value;
+  return {
+    ...supplier,
+    _id: String(supplierId || _id),
+  } as ISupplier;
+}
+
+function toMongoSupplierRecord(supplier: ISupplier) {
+  const { _id, ...supplierData } = supplier;
+  return { supplierId: _id, ...supplierData };
+}
+
 export async function getSuppliers(): Promise<ISupplier[]> {
+  const mongo = await seedMongoSuppliersFromLocalFile();
+  if (mongo) {
+    const suppliers = await Supplier.find({ isArchived: { $ne: true } }).sort({ createdAt: -1 }).lean();
+    return suppliers.map((supplier) => toSupplierRecord(supplier as unknown as Record<string, unknown>));
+  }
+
   const db = ensureDB();
   return db.suppliers.filter((supplier) => !supplier.isArchived);
 }
 
 export async function getSupplierById(id: string): Promise<ISupplier | null> {
+  const mongo = await seedMongoSuppliersFromLocalFile();
+  if (mongo) {
+    const supplier = await Supplier.findOne({ supplierId: id, isArchived: { $ne: true } }).lean();
+    return supplier
+      ? toSupplierRecord(supplier as unknown as Record<string, unknown>)
+      : null;
+  }
+
   const db = ensureDB();
   return db.suppliers.find((s) => s._id === id && !s.isArchived) || null;
 }
 
 export async function createSupplier(data: Omit<ISupplier, "_id" | "createdAt" | "totalPurchased" | "totalPaid" | "outstandingBalance">): Promise<ISupplier> {
+  const mongo = await seedMongoSuppliersFromLocalFile();
   const db = ensureDB();
   const opening = Number(data.openingBalance) || 0;
   const newSup: ISupplier = {
@@ -426,12 +479,27 @@ export async function createSupplier(data: Omit<ISupplier, "_id" | "createdAt" |
     outstandingBalance: opening,
     createdAt: new Date().toISOString(),
   };
+  if (mongo) {
+    const created = await Supplier.create(toMongoSupplierRecord(newSup));
+    return toSupplierRecord(created.toObject() as unknown as Record<string, unknown>);
+  }
+
   db.suppliers.push(newSup);
   saveDB();
   return newSup;
 }
 
 export async function archiveSupplier(id: string): Promise<{ success: boolean; error?: string }> {
+  const mongo = await seedMongoSuppliersFromLocalFile();
+  if (mongo) {
+    const result = await Supplier.updateOne(
+      { supplierId: id, isArchived: { $ne: true } },
+      { $set: { isArchived: true } }
+    );
+    if (result.matchedCount === 0) return { success: false, error: "Supplier not found." };
+    return { success: true };
+  }
+
   const db = ensureDB();
   const supplier = db.suppliers.find((item) => item._id === id);
   if (!supplier) return { success: false, error: "Supplier not found." };

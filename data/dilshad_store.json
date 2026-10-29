@@ -61,6 +61,18 @@
       "outstandingBalance": 39,
       "createdAt": "2026-10-29T08:13:31.112Z",
       "isArchived": true
+    },
+    {
+      "_id": "id_mvt9ukgu_u2leo",
+      "name": "Ea aperiam dolore vo",
+      "phone": "Qui at doloremque ve",
+      "address": "Quam eius recusandae",
+      "openingBalance": 16,
+      "totalPurchased": 0,
+      "totalPaid": 0,
+      "outstandingBalance": 16,
+      "createdAt": "2026-10-29T08:18:44.382Z",
+      "isArchived": true
     }
   ],
   "purchases": [
@@ -199,6 +211,24 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvt9urzr_c3ql6",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_ARCHIVED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt9ukgu_u2leo",
+      "details": "Archived supplier: id_mvt9ukgu_u2leo; financial and purchase history retained",
+      "createdAt": "2026-10-29T08:18:54.135Z"
+    },
+    {
+      "_id": "id_mvt9ukgw_r86tt",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt9ukgu_u2leo",
+      "details": "Created supplier: Ea aperiam dolore vo",
+      "createdAt": "2026-10-29T08:18:44.384Z"
+    },
     {
       "_id": "id_mvt9qrj5_bjhmt",
       "adminEmail": "dilshad@gmail.com",
