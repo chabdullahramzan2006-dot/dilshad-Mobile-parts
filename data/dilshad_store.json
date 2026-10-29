@@ -13,8 +13,23 @@
       "updatedAt": "2026-10-28T07:25:59.472Z"
     }
   ],
-  "categories": [],
-  "brands": [],
+  "categories": [
+    {
+      "_id": "id_mvtb77uz_guouj",
+      "name": "Charging Flex Cables",
+      "slug": "charging-flex-cables",
+      "productCount": 0,
+      "createdAt": "2026-10-29T08:56:34.187Z"
+    }
+  ],
+  "brands": [
+    {
+      "_id": "id_mvtb7brj_fzek9",
+      "name": "Samsung",
+      "slug": "samsung",
+      "createdAt": "2026-10-29T08:56:39.247Z"
+    }
+  ],
   "products": [
     {
       "_id": "id_mvt9698i_3y3kh",
@@ -35,6 +50,25 @@
       "createdAt": "2026-10-29T07:59:50.082Z",
       "updatedAt": "2026-10-29T08:09:38.412Z",
       "isArchived": true
+    },
+    {
+      "_id": "id_mvtb7fmr_nbow3",
+      "name": "Vitae saepe ipsam ul",
+      "sku": "VOLUPTAS CORRUPTI T",
+      "category": "Charging Flex Cables",
+      "brand": "Samsung",
+      "modelCompatibility": "Delectus aut sunt",
+      "purchasePrice": 93,
+      "sellingPrice": 49,
+      "wholesalePrice": 16,
+      "currentStock": 92,
+      "minStockAlert": 1,
+      "description": "Dolorum modi eaque o",
+      "images": [
+        "Quam quo et cupidita"
+      ],
+      "createdAt": "2026-10-29T08:56:44.259Z",
+      "updatedAt": "2026-10-29T08:56:44.259Z"
     }
   ],
   "suppliers": [
@@ -165,6 +199,19 @@
       "referenceId": "PUR-20261029-9807",
       "performedBy": "Admin",
       "createdAt": "2026-10-29T08:00:11.685Z"
+    },
+    {
+      "_id": "id_mvtb7fmr_q8phr",
+      "productId": "id_mvtb7fmr_nbow3",
+      "productName": "Vitae saepe ipsam ul",
+      "sku": "VOLUPTAS CORRUPTI T",
+      "type": "PURCHASE",
+      "quantityChange": 92,
+      "previousStock": 0,
+      "newStock": 92,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T08:56:44.259Z"
     }
   ],
   "expenses": [
@@ -211,6 +258,15 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvtb7k29_iu67j",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtb7fmr_nbow3",
+      "details": "Created product: Vitae saepe ipsam ul (VOLUPTAS CORRUPTI T)",
+      "createdAt": "2026-10-29T08:56:50.001Z"
+    },
     {
       "_id": "id_mvt9urzr_c3ql6",
       "adminEmail": "dilshad@gmail.com",

@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
 // --- 1. ADMIN MODEL ---
 export interface IAdminDoc extends Document {
@@ -31,6 +31,7 @@ const AdminSchema = new Schema<IAdminDoc>(
 // --- 2. CATEGORY MODEL ---
 const CategorySchema = new Schema(
   {
+    categoryId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true },
     description: { type: String },
@@ -42,6 +43,7 @@ const CategorySchema = new Schema(
 // --- 3. BRAND MODEL ---
 const BrandSchema = new Schema(
   {
+    brandId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true, unique: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true },
     description: { type: String },
@@ -52,6 +54,7 @@ const BrandSchema = new Schema(
 // --- 4. PRODUCT MODEL ---
 const ProductSchema = new Schema(
   {
+    productId: { type: String, required: true, unique: true, index: true },
     name: { type: String, required: true, trim: true, index: true },
     sku: { type: String, required: true, unique: true, uppercase: true, trim: true, index: true },
     category: { type: String, required: true, index: true },

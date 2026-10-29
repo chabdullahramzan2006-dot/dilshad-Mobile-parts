@@ -27,7 +27,7 @@ interface ProductsViewProps {
   categories: ICategory[];
   brands: IBrand[];
   settings: IShopSettings;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
 }
 
 export function ProductsView({
@@ -56,8 +56,8 @@ export function ProductsView({
   // Product Form State
   const [formName, setFormName] = useState("");
   const [formSku, setFormSku] = useState("");
-  const [formCategory, setFormCategory] = useState(categories[0]?.name || "Charging Flex Cables");
-  const [formBrand, setFormBrand] = useState(brands[0]?.name || "Samsung");
+  const [formCategory, setFormCategory] = useState(categories[0]?.name || "");
+  const [formBrand, setFormBrand] = useState(brands[0]?.name || "");
   const [formModel, setFormModel] = useState("");
   const [formPurchasePrice, setFormPurchasePrice] = useState<number | "">("");
   const [formSellingPrice, setFormSellingPrice] = useState<number | "">("");
@@ -107,8 +107,8 @@ export function ProductsView({
   };
 
   const handleSaveProduct = async (isEdit: boolean) => {
-    if (!formName || !formSku || !formPurchasePrice || !formSellingPrice) {
-      toast.error("Please fill all required fields (Name, SKU, Purchase Price, Selling Price).");
+    if (!formName.trim() || !formSku.trim() || !formCategory.trim() || !formBrand.trim() || !formPurchasePrice || !formSellingPrice) {
+      toast.error("Please fill all required fields, including category and brand.");
       return;
     }
 
@@ -116,8 +116,8 @@ export function ProductsView({
       const payload = {
         name: formName.trim(),
         sku: formSku.trim().toUpperCase(),
-        category: formCategory,
-        brand: formBrand,
+        category: formCategory.trim(),
+        brand: formBrand.trim(),
         modelCompatibility: formModel.trim(),
         purchasePrice: Number(formPurchasePrice),
         sellingPrice: Number(formSellingPrice),
@@ -143,9 +143,9 @@ export function ProductsView({
       toast.success(isEdit ? "Product updated!" : "Product created successfully!");
       setShowAddModal(false);
       setShowEditModal(false);
-      onRefresh();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to save product");
+      await onRefresh();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to save product");
     }
   };
 
@@ -153,12 +153,12 @@ export function ProductsView({
     if (!confirm("Are you sure you want to archive this product?")) return;
     try {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        toast.success("Product archived.");
-        onRefresh();
-      }
-    } catch (e: any) {
-      toast.error(e.message);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to archive product");
+      toast.success("Product archived.");
+      await onRefresh();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to archive product");
     }
   };
 
@@ -190,9 +190,9 @@ export function ProductsView({
       setShowStockModal(false);
       setAdjustQty("");
       setAdjustReason("");
-      onRefresh();
-    } catch (err: any) {
-      toast.error(err.message);
+      await onRefresh();
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to adjust stock");
     }
   };
 
@@ -241,8 +241,8 @@ export function ProductsView({
               // Reset form
               setFormName("");
               setFormSku("DMP-" + Math.floor(1000 + Math.random() * 9000));
-              setFormCategory(categories[0]?.name || "Charging Flex Cables");
-              setFormBrand(brands[0]?.name || "Samsung");
+              setFormCategory(categories[0]?.name || "");
+              setFormBrand(brands[0]?.name || "");
               setFormModel("");
               setFormPurchasePrice("");
               setFormSellingPrice("");
@@ -460,34 +460,38 @@ export function ProductsView({
             <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
               Category *
             </label>
-            <select
+            <input
+              type="text"
               value={formCategory}
               onChange={(e) => setFormCategory(e.target.value)}
+              list="product-categories"
+              placeholder="Type a category or select a saved one"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-            >
+            />
+            <datalist id="product-categories">
               {categories.map((c) => (
-                <option key={c._id} value={c.name}>
-                  {c.name}
-                </option>
+                <option key={c._id} value={c.name} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>
             <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
               Brand *
             </label>
-            <select
+            <input
+              type="text"
               value={formBrand}
               onChange={(e) => setFormBrand(e.target.value)}
+              list="product-brands"
+              placeholder="Type a brand or select a saved one"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-            >
+            />
+            <datalist id="product-brands">
               {brands.map((b) => (
-                <option key={b._id} value={b.name}>
-                  {b.name}
-                </option>
+                <option key={b._id} value={b.name} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>
@@ -627,7 +631,9 @@ export function ProductsView({
             </label>
             <select
               value={adjustType}
-              onChange={(e) => setAdjustType(e.target.value as any)}
+              onChange={(e) =>
+                setAdjustType(e.target.value as "DAMAGE" | "LOST" | "ADJUSTMENT")
+              }
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold"
             >
               <option value="DAMAGE">Damaged / Broken Part (Recorded in Profit & Loss)</option>

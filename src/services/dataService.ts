@@ -22,7 +22,7 @@ import {
 } from "@/types";
 import { hashPassword } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Supplier } from "@/models";
+import { Brand, Category, Product, Supplier } from "@/models";
 import { preciseAdd, preciseSubtract, preciseMultiply } from "@/lib/currency";
 import { generateInvoiceNumber } from "@/lib/utils";
 
@@ -130,6 +130,204 @@ function generateId(): string {
   return "id_" + Date.now().toString(36) + "_" + Math.random().toString(36).substring(2, 7);
 }
 
+type MongoProductRecord = Omit<IProduct, "_id" | "createdAt" | "updatedAt"> & {
+  productId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+type MongoCategoryRecord = Omit<ICategory, "_id" | "createdAt"> & {
+  categoryId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+type MongoBrandRecord = Omit<IBrand, "_id" | "createdAt"> & {
+  brandId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+function mongoProductToRecord(product: MongoProductRecord): IProduct {
+  const { _id, productId, createdAt, updatedAt, ...fields } = product;
+  return {
+    ...fields,
+    _id: productId || String(_id),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: updatedAt ? new Date(updatedAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+function mongoCategoryToRecord(category: MongoCategoryRecord): ICategory {
+  const { _id, categoryId, createdAt, ...fields } = category;
+  return {
+    ...fields,
+    _id: categoryId || String(_id),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+function mongoBrandToRecord(brand: MongoBrandRecord): IBrand {
+  const { _id, brandId, createdAt, ...fields } = brand;
+  return {
+    ...fields,
+    _id: brandId || String(_id),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+async function syncMongoCatalogToLocal() {
+  const db = ensureDB();
+  for (const product of db.products) {
+    if (!db.categories.some((category) => category.name.toLowerCase() === product.category.toLowerCase())) {
+      db.categories.push({
+        _id: generateId(),
+        name: product.category,
+        slug: product.category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        productCount: 0,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    if (!db.brands.some((brand) => brand.name.toLowerCase() === product.brand.toLowerCase())) {
+      db.brands.push({
+        _id: generateId(),
+        name: product.brand,
+        slug: product.brand.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+        createdAt: new Date().toISOString(),
+      });
+    }
+  }
+  const mongo = await connectDB();
+  if (!mongo) return null;
+
+  if (db.products.length) {
+    await Product.bulkWrite(
+      db.products.map((product) => {
+        const { _id, ...fields } = product;
+        return {
+          updateOne: {
+            filter: { productId: _id },
+            update: { $setOnInsert: { ...fields, productId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (db.categories.length) {
+    await Category.bulkWrite(
+      db.categories.map((category) => {
+        const { _id, ...fields } = category;
+        return {
+          updateOne: {
+            filter: { categoryId: _id },
+            update: { $setOnInsert: { ...fields, categoryId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (db.brands.length) {
+    await Brand.bulkWrite(
+      db.brands.map((brand) => {
+        const { _id, ...fields } = brand;
+        return {
+          updateOne: {
+            filter: { brandId: _id },
+            update: { $setOnInsert: { ...fields, brandId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+
+  db.products = (await Product.find({}).lean()).map(mongoProductToRecord);
+  db.categories = (await Category.find({}).lean()).map(mongoCategoryToRecord);
+  db.brands = (await Brand.find({}).lean()).map(mongoBrandToRecord);
+
+  return mongo;
+}
+
+async function persistMongoProducts(products: IProduct[]) {
+  if (!(await connectDB()) || products.length === 0) return;
+  await Product.bulkWrite(
+    products.map((product) => {
+      const { _id, ...fields } = product;
+      return {
+        updateOne: {
+          filter: { productId: _id },
+          update: { $set: { ...fields, productId: _id } },
+          upsert: true,
+        },
+      };
+    }),
+    { ordered: false }
+  );
+}
+
+async function ensureMongoCategory(name: string, description?: string) {
+  const normalizedName = name.trim();
+  if (!normalizedName) return;
+  const slug = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const category: ICategory = {
+    _id: generateId(),
+    name: normalizedName,
+    slug,
+    description,
+    productCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+  const db = ensureDB();
+  if (!db.categories.some((item) => item.name.toLowerCase() === normalizedName.toLowerCase())) {
+    db.categories.push(category);
+  }
+  if (await connectDB()) {
+    await Category.updateOne(
+      { slug },
+      (() => {
+        const { _id, ...fields } = category;
+        return { $setOnInsert: { ...fields, categoryId: _id } };
+      })(),
+      { upsert: true }
+    );
+  }
+}
+
+async function ensureMongoBrand(name: string, description?: string) {
+  const normalizedName = name.trim();
+  if (!normalizedName) return;
+  const slug = normalizedName.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+  const brand: IBrand = {
+    _id: generateId(),
+    name: normalizedName,
+    slug,
+    description,
+    createdAt: new Date().toISOString(),
+  };
+  const db = ensureDB();
+  if (!db.brands.some((item) => item.name.toLowerCase() === normalizedName.toLowerCase())) {
+    db.brands.push(brand);
+  }
+  if (await connectDB()) {
+    await Brand.updateOne(
+      { slug },
+      (() => {
+        const { _id, ...fields } = brand;
+        return { $setOnInsert: { ...fields, brandId: _id } };
+      })(),
+      { upsert: true }
+    );
+  }
+}
+
 // ==========================================
 // SEEDING INITIAL DATA
 // ==========================================
@@ -198,6 +396,7 @@ export async function getProducts(options?: {
   lowStock?: boolean;
   outOfStock?: boolean;
 }): Promise<IProduct[]> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   let list = db.products.filter((p) => !p.isArchived);
 
@@ -227,12 +426,16 @@ export async function getProducts(options?: {
 }
 
 export async function getProductById(id: string): Promise<IProduct | null> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   return db.products.find((p) => p._id === id) || null;
 }
 
 export async function createProduct(productData: Omit<IProduct, "_id" | "createdAt" | "updatedAt">): Promise<IProduct> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
+  await ensureMongoCategory(productData.category);
+  await ensureMongoBrand(productData.brand);
   const newProduct: IProduct = {
     _id: generateId(),
     ...productData,
@@ -265,10 +468,12 @@ export async function createProduct(productData: Omit<IProduct, "_id" | "created
   }
 
   saveDB();
+  await persistMongoProducts([newProduct]);
   return newProduct;
 }
 
 export async function updateProduct(id: string, updates: Partial<IProduct>): Promise<IProduct | null> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const index = db.products.findIndex((p) => p._id === id);
   if (index === -1) return null;
@@ -281,11 +486,15 @@ export async function updateProduct(id: string, updates: Partial<IProduct>): Pro
   };
 
   db.products[index] = updated;
+  if (updated.category) await ensureMongoCategory(updated.category);
+  if (updated.brand) await ensureMongoBrand(updated.brand);
   saveDB();
+  await persistMongoProducts([updated]);
   return updated;
 }
 
 export async function deleteProduct(id: string, softDelete = true): Promise<boolean> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const prod = db.products.find((p) => p._id === id);
   if (!prod) return false;
@@ -298,6 +507,8 @@ export async function deleteProduct(id: string, softDelete = true): Promise<bool
   }
 
   saveDB();
+  if (softDelete) await persistMongoProducts([prod]);
+  else if (await connectDB()) await Product.deleteOne({ productId: id });
   return true;
 }
 
@@ -309,6 +520,7 @@ export async function adjustStock(
   reason: string,
   performedBy = "Admin"
 ): Promise<{ success: boolean; newStock?: number; error?: string }> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const prod = db.products.find((p) => p._id === productId);
   if (!prod) return { success: false, error: "Product not found" };
@@ -338,6 +550,7 @@ export async function adjustStock(
   });
 
   saveDB();
+  await persistMongoProducts([prod]);
   return { success: true, newStock };
 }
 
@@ -345,6 +558,7 @@ export async function adjustStock(
 // CATEGORIES & BRANDS
 // ==========================================
 export async function getCategories(): Promise<ICategory[]> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   // Recalculate live product count
   return db.categories.map((c) => {
@@ -354,6 +568,7 @@ export async function getCategories(): Promise<ICategory[]> {
 }
 
 export async function createCategory(name: string, description?: string): Promise<ICategory> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   const newCat: ICategory = {
@@ -364,24 +579,38 @@ export async function createCategory(name: string, description?: string): Promis
     productCount: 0,
     createdAt: new Date().toISOString(),
   };
+  const existing = db.categories.find((category) => category.name.toLowerCase() === name.trim().toLowerCase());
+  if (existing) return existing;
   db.categories.push(newCat);
   saveDB();
+  if (await connectDB()) {
+    const { _id, ...fields } = newCat;
+    await Category.updateOne(
+      { slug },
+      { $setOnInsert: { ...fields, categoryId: _id } },
+      { upsert: true }
+    );
+  }
   return newCat;
 }
 
 export async function deleteCategory(id: string): Promise<boolean> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   db.categories = db.categories.filter((c) => c._id !== id);
   saveDB();
+  if (await connectDB()) await Category.deleteOne({ categoryId: id });
   return true;
 }
 
 export async function getBrands(): Promise<IBrand[]> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   return db.brands;
 }
 
 export async function createBrand(name: string, description?: string): Promise<IBrand> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
   const newBrand: IBrand = {
@@ -391,15 +620,27 @@ export async function createBrand(name: string, description?: string): Promise<I
     description,
     createdAt: new Date().toISOString(),
   };
+  const existing = db.brands.find((brand) => brand.name.toLowerCase() === name.trim().toLowerCase());
+  if (existing) return existing;
   db.brands.push(newBrand);
   saveDB();
+  if (await connectDB()) {
+    const { _id, ...fields } = newBrand;
+    await Brand.updateOne(
+      { slug },
+      { $setOnInsert: { ...fields, brandId: _id } },
+      { upsert: true }
+    );
+  }
   return newBrand;
 }
 
 export async function deleteBrand(id: string): Promise<boolean> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   db.brands = db.brands.filter((b) => b._id !== id);
   saveDB();
+  if (await connectDB()) await Brand.deleteOne({ brandId: id });
   return true;
 }
 
@@ -530,8 +771,9 @@ export async function createPurchase(purchaseData: {
   notes?: string;
   customFields?: Record<string, any>;
 }): Promise<{ success: boolean; purchase?: IPurchase; error?: string }> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
-  const supplier = db.suppliers.find((s) => s._id === purchaseData.supplierId);
+  const supplier = await getSupplierById(purchaseData.supplierId);
   if (!supplier) return { success: false, error: "Supplier not found." };
 
   const invoiceNumber = generateInvoiceNumber("PUR");
@@ -590,9 +832,22 @@ export async function createPurchase(purchaseData: {
   const balance = preciseSubtract(totalAmount, paid);
 
   // Update Supplier Balances
-  supplier.totalPurchased = preciseAdd(supplier.totalPurchased, totalAmount);
-  supplier.totalPaid = preciseAdd(supplier.totalPaid, paid);
-  supplier.outstandingBalance = preciseAdd(supplier.outstandingBalance, balance);
+  if (await connectDB()) {
+    await Supplier.updateOne(
+      { supplierId: supplier._id },
+      {
+        $inc: {
+          totalPurchased: totalAmount,
+          totalPaid: paid,
+          outstandingBalance: balance,
+        },
+      }
+    );
+  } else {
+    supplier.totalPurchased = preciseAdd(supplier.totalPurchased, totalAmount);
+    supplier.totalPaid = preciseAdd(supplier.totalPaid, paid);
+    supplier.outstandingBalance = preciseAdd(supplier.outstandingBalance, balance);
+  }
 
   const newPurchase: IPurchase = {
     _id: generateId(),
@@ -634,6 +889,7 @@ export async function createPurchase(purchaseData: {
   }
 
   saveDB();
+  await persistMongoProducts(db.products);
   return { success: true, purchase: newPurchase };
 }
 
@@ -705,6 +961,7 @@ export async function createSale(saleData: {
   notes?: string;
   customFields?: Record<string, any>;
 }): Promise<{ success: boolean; sale?: ISale; error?: string }> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const invoiceNumber = generateInvoiceNumber("INV");
   let subtotal = 0;
@@ -887,6 +1144,7 @@ export async function createSale(saleData: {
   }
 
   saveDB();
+  await persistMongoProducts(db.products);
   return { success: true, sale: newSale };
 }
 
@@ -895,6 +1153,7 @@ export async function returnSale(
   saleId: string,
   returnReason: string
 ): Promise<{ success: boolean; error?: string }> {
+  await syncMongoCatalogToLocal();
   const db = ensureDB();
   const sale = db.sales.find((s) => s._id === saleId || s.invoiceNumber === saleId);
   if (!sale) return { success: false, error: "Sale invoice not found." };
@@ -956,6 +1215,7 @@ export async function returnSale(
   sale.paymentStatus = "Refunded";
 
   saveDB();
+  await persistMongoProducts(db.products);
   return { success: true };
 }
 
