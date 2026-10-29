@@ -24,6 +24,8 @@ interface PurchasesViewProps {
   products: IProduct[];
   settings: IShopSettings;
   onRefresh: () => Promise<void>;
+  onSupplierAdded: (supplier: ISupplier) => void;
+  onSupplierArchived: (supplierId: string) => void;
 }
 
 export function PurchasesView({
@@ -32,6 +34,8 @@ export function PurchasesView({
   products,
   settings,
   onRefresh,
+  onSupplierAdded,
+  onSupplierArchived,
 }: PurchasesViewProps) {
   const [showAddPurchaseModal, setShowAddPurchaseModal] = useState(false);
   const [showSupplierModal, setShowSupplierModal] = useState(false);
@@ -151,6 +155,7 @@ export function PurchasesView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
+      onSupplierAdded(data.supplier);
       toast.success("Supplier created!");
       setShowSupplierModal(false);
       setSelectedSupplierId(data.supplier._id);
@@ -158,7 +163,7 @@ export function PurchasesView({
       setSupPhone("");
       setSupAddress("");
       setSupOpening("");
-      await onRefresh();
+      void onRefresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to create supplier.");
     }
@@ -179,8 +184,9 @@ export function PurchasesView({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to delete supplier.");
 
+      onSupplierArchived(supplier._id);
       toast.success("Supplier archived. Purchase and payable history were kept.");
-      await onRefresh();
+      void onRefresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to delete supplier.");
     } finally {

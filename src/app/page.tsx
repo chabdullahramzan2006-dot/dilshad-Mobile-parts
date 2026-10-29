@@ -127,6 +127,8 @@ export default function ShopApp() {
   const [brands, setBrands] = useState<any[]>([]);
   const [shopSettings, setShopSettings] = useState<IShopSettings>({
     shopName: "Dilshad Mobile Parts",
+    shopLogo: "",
+    theme: "sky",
     address: "Shop # 12, Mobile Market, Saddar, Karachi",
     timeZone: "Asia/Karachi",
     phone: "+92 300 2345678",
@@ -857,6 +859,16 @@ export default function ShopApp() {
               products={products}
               settings={shopSettings}
               onRefresh={fetchAllData}
+              onSupplierAdded={(supplier) => {
+                setSuppliers((current) =>
+                  current.some((existing) => existing._id === supplier._id)
+                    ? current
+                    : [...current, supplier]
+                );
+              }}
+              onSupplierArchived={(supplierId) => {
+                setSuppliers((current) => current.filter((supplier) => supplier._id !== supplierId));
+              }}
             />
           )}
 

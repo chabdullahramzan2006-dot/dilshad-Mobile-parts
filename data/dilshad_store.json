@@ -49,6 +49,18 @@
       "outstandingBalance": 2812,
       "isArchived": true,
       "createdAt": "2026-10-29T07:59:32.707Z"
+    },
+    {
+      "_id": "id_mvt9nuqw_ftht7",
+      "name": "Officia consequat Q",
+      "phone": "Officia ad dolor vol",
+      "address": "Id laborum Impedit",
+      "openingBalance": 39,
+      "totalPurchased": 0,
+      "totalPaid": 0,
+      "outstandingBalance": 39,
+      "createdAt": "2026-10-29T08:13:31.112Z",
+      "isArchived": true
     }
   ],
   "purchases": [
@@ -187,6 +199,24 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvt9qrj5_bjhmt",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_ARCHIVED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt9nuqw_ftht7",
+      "details": "Archived supplier: id_mvt9nuqw_ftht7; financial and purchase history retained",
+      "createdAt": "2026-10-29T08:15:46.913Z"
+    },
+    {
+      "_id": "id_mvt9nuqx_uymbb",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "SUPPLIER_CREATED",
+      "entityType": "Supplier",
+      "entityId": "id_mvt9nuqw_ftht7",
+      "details": "Created supplier: Officia consequat Q",
+      "createdAt": "2026-10-29T08:13:31.113Z"
+    },
     {
       "_id": "id_mvt9iv71_pkglj",
       "adminEmail": "dilshad@gmail.com",
