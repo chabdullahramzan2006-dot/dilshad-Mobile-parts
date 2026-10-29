@@ -18,7 +18,10 @@ export async function GET(req: NextRequest) {
     const outOfStock = searchParams.get("outOfStock") === "true";
 
     const products = await getProducts({ search, category, brand, lowStock, outOfStock });
-    return NextResponse.json({ success: true, products });
+    return NextResponse.json(
+      { success: true, products },
+      { headers: { "Cache-Control": "no-store, max-age=0" } }
+    );
   } catch (error: any) {
     return NextResponse.json({ error: error.message || "Failed to fetch products" }, { status: 500 });
   }

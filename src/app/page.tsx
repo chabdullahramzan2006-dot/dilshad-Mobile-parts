@@ -190,8 +190,8 @@ export default function ShopApp() {
       const [dashRes, prodRes, custRes, supRes, purRes, saleRes, expRes, catRes, brandRes] =
         await Promise.all([
           fetch(`/api/dashboard?timeZone=${encodeURIComponent(timeZone)}`),
-          fetch("/api/products"),
-          fetch("/api/customers"),
+          fetch("/api/products", { cache: "no-store" }),
+          fetch("/api/customers", { cache: "no-store" }),
           fetch("/api/suppliers"),
           fetch("/api/purchases"),
           fetch("/api/sales"),

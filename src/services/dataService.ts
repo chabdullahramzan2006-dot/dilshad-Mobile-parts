@@ -228,7 +228,7 @@ async function syncMongoCatalogToLocal() {
   if (migrationProducts.length) {
     await Product.bulkWrite(
       migrationProducts.map((product) => {
-        const { _id, ...fields } = product;
+        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
         return {
           updateOne: {
             filter: { $or: [{ productId: _id }, { sku: product.sku }] },
@@ -240,13 +240,13 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false, timestamps: false }
+      { ordered: false }
     );
   }
   if (db.categories.length) {
     await Category.bulkWrite(
       db.categories.map((category) => {
-        const { _id, ...fields } = category;
+        const { _id, createdAt: _createdAt, ...fields } = category;
         return {
           updateOne: {
             filter: { $or: [{ categoryId: _id }, { slug: category.slug }] },
@@ -258,13 +258,13 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false, timestamps: false }
+      { ordered: false }
     );
   }
   if (db.brands.length) {
     await Brand.bulkWrite(
       db.brands.map((brand) => {
-        const { _id, ...fields } = brand;
+        const { _id, createdAt: _createdAt, ...fields } = brand;
         return {
           updateOne: {
             filter: { $or: [{ brandId: _id }, { slug: brand.slug }] },
@@ -276,7 +276,7 @@ async function syncMongoCatalogToLocal() {
           },
         };
       }),
-      { ordered: false, timestamps: false }
+      { ordered: false }
     );
   }
 
@@ -291,22 +291,16 @@ async function persistMongoProducts(products: IProduct[]) {
   if (!(await connectDB()) || products.length === 0) return;
   await Product.bulkWrite(
     products.map((product) => {
-      const { _id, ...fields } = product;
+      const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
       return {
         updateOne: {
           filter: { productId: _id },
-          update: {
-            $set: {
-              ...fields,
-              productId: _id,
-              updatedAt: new Date(),
-            },
-          },
+          update: { $set: { ...fields, productId: _id } },
           upsert: true,
         },
       };
     }),
-    { ordered: false, timestamps: false }
+    { ordered: false }
   );
 }
 
@@ -661,6 +655,12 @@ export async function createProduct(productData: Omit<IProduct, "_id" | "created
     updatedAt: new Date().toISOString(),
   };
 
+  const mongo = await connectDB();
+  if (mongo) {
+    const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = newProduct;
+    await Product.create({ ...fields, productId: _id });
+  }
+
   db.products.push(newProduct);
 
   if (newProduct.currentStock > 0) {
@@ -680,7 +680,6 @@ export async function createProduct(productData: Omit<IProduct, "_id" | "created
   }
 
   saveDB();
-  await persistMongoProducts([newProduct]);
   return newProduct;
 }
 
