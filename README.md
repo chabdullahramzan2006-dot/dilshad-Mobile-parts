@@ -38,18 +38,18 @@ not require separate Vercel routes.
 
 The current API data service reads and writes `data/dilshad_store.json` with the
 Node.js filesystem. This is not browser Local Storage, and Vercel function
-filesystems are not a durable database. Supplier, product, category, and brand
-records use MongoDB when `MONGODB_URI` is configured. Product stock changes
-made through inventory adjustment, purchases, sales, and returns are also
-written to MongoDB. Configure `MONGODB_URI` in Vercel's project environment
+filesystems are not a durable database. Supplier, product, category, brand, customer accounts, and customer Khata
+payments/ledger entries use MongoDB when `MONGODB_URI` is configured. Product
+stock changes made through inventory adjustment, purchases, sales, and returns
+are also written to MongoDB. Configure `MONGODB_URI` in Vercel's project environment
 variables and allow the deployment to connect in the MongoDB provider's network
 settings. Existing catalog records in the bundled JSON file are copied into
 MongoDB on first access without replacing already stored records.
 
-Purchase and sale history, inventory movements, customer and payment records,
-and other shop data still use the local JSON data service and are not durable on
-Vercel. Migrate those records and operations to the hosted database before
-relying on production transaction history.
+Purchase and sale history, inventory movements, and other shop data still use
+the local JSON data service and are not durable on Vercel. Migrate those records
+and operations to the hosted database before relying on production transaction
+history.
 
 For production, also configure a strong `JWT_SECRET` in Vercel's environment
 variables and replace the initial admin credentials before using the app.

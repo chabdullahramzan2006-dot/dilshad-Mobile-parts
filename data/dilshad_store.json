@@ -34,6 +34,27 @@
       "slug": "quo-ex-deserunt-offi",
       "productCount": 0,
       "createdAt": "2026-10-29T09:04:05.340Z"
+    },
+    {
+      "_id": "id_mvtbo3dg_yfrc1",
+      "name": "Est itaque libero di",
+      "slug": "est-itaque-libero-di",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:09:41.524Z"
+    },
+    {
+      "_id": "id_mvtbp94x_1q5zi",
+      "name": "Dolore voluptatem M",
+      "slug": "dolore-voluptatem-m",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:10:35.649Z"
+    },
+    {
+      "_id": "id_mvtbtk7w_7cuk2",
+      "name": "Neque ullam omnis op",
+      "slug": "neque-ullam-omnis-op",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:13:56.636Z"
     }
   ],
   "brands": [
@@ -54,6 +75,24 @@
       "name": "Aliquip commodo anim",
       "slug": "aliquip-commodo-anim",
       "createdAt": "2026-10-29T09:04:10.359Z"
+    },
+    {
+      "_id": "id_mvtbo78t_pxllm",
+      "name": "Explicabo Omnis off",
+      "slug": "explicabo-omnis-off",
+      "createdAt": "2026-10-29T09:09:46.541Z"
+    },
+    {
+      "_id": "id_mvtbpd06_muip2",
+      "name": "Enim voluptas maxime",
+      "slug": "enim-voluptas-maxime",
+      "createdAt": "2026-10-29T09:10:40.662Z"
+    },
+    {
+      "_id": "id_mvtbto38_a6zkz",
+      "name": "Sed quod ad irure es",
+      "slug": "sed-quod-ad-irure-es",
+      "createdAt": "2026-10-29T09:14:01.652Z"
     }
   ],
   "products": [
@@ -94,7 +133,8 @@
         "Quam quo et cupidita"
       ],
       "createdAt": "2026-10-29T08:56:44.259Z",
-      "updatedAt": "2026-10-29T08:56:44.259Z"
+      "updatedAt": "2026-10-29T09:09:36.294Z",
+      "isArchived": true
     },
     {
       "_id": "id_mvtbgcm7_3lj3x",
@@ -247,6 +287,61 @@
       ],
       "createdAt": "2026-10-29T09:04:15.376Z",
       "updatedAt": "2026-10-29T09:04:15.376Z"
+    },
+    {
+      "_id": "id_mvtbob4b_s7qux",
+      "name": "Est omnis totam qua",
+      "sku": "UNDE QUIDEM QUI SAEP",
+      "category": "Est itaque libero di",
+      "brand": "Explicabo Omnis off",
+      "modelCompatibility": "Fuga Est porro exer",
+      "purchasePrice": 28,
+      "sellingPrice": 94,
+      "wholesalePrice": 66,
+      "currentStock": 10,
+      "minStockAlert": 32,
+      "description": "Et sint tempor accus",
+      "images": [
+        "Nulla iusto fugit a"
+      ],
+      "createdAt": "2026-10-29T09:09:51.563Z",
+      "updatedAt": "2026-10-29T09:09:51.563Z"
+    },
+    {
+      "_id": "id_mvtbpgvk_e1c4t",
+      "name": "Ratione error rem mi",
+      "sku": "MAXIME EVENIET QUIA",
+      "category": "Dolore voluptatem M",
+      "brand": "Enim voluptas maxime",
+      "modelCompatibility": "Nihil corrupti ut q",
+      "purchasePrice": 61,
+      "sellingPrice": 40,
+      "wholesalePrice": 26,
+      "currentStock": 53,
+      "minStockAlert": 28,
+      "description": "Ut tempore voluptat",
+      "images": [
+        "Blanditiis cum ea di"
+      ],
+      "createdAt": "2026-10-29T09:10:45.680Z",
+      "updatedAt": "2026-10-29T09:10:45.680Z"
+    },
+    {
+      "_id": "id_mvtbtry8_zoipx",
+      "name": "Et aspernatur alias",
+      "sku": "VOLUPTATE EST IPSA",
+      "category": "Neque ullam omnis op",
+      "brand": "Sed quod ad irure es",
+      "modelCompatibility": "Autem maxime quos ra",
+      "purchasePrice": 50,
+      "sellingPrice": 90,
+      "wholesalePrice": 17,
+      "currentStock": 93,
+      "minStockAlert": 45,
+      "description": "",
+      "images": [],
+      "createdAt": "2026-10-29T09:14:06.656Z",
+      "updatedAt": "2026-10-29T09:14:06.656Z"
     }
   ],
   "suppliers": [
@@ -494,6 +589,45 @@
       "reason": "Initial Product Creation Stock",
       "performedBy": "Admin",
       "createdAt": "2026-10-29T09:04:15.376Z"
+    },
+    {
+      "_id": "id_mvtbob4b_1gr50",
+      "productId": "id_mvtbob4b_s7qux",
+      "productName": "Est omnis totam qua",
+      "sku": "UNDE QUIDEM QUI SAEP",
+      "type": "PURCHASE",
+      "quantityChange": 10,
+      "previousStock": 0,
+      "newStock": 10,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:09:51.563Z"
+    },
+    {
+      "_id": "id_mvtbpgvk_aldcy",
+      "productId": "id_mvtbpgvk_e1c4t",
+      "productName": "Ratione error rem mi",
+      "sku": "MAXIME EVENIET QUIA",
+      "type": "PURCHASE",
+      "quantityChange": 53,
+      "previousStock": 0,
+      "newStock": 53,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:10:45.680Z"
+    },
+    {
+      "_id": "id_mvtbtry8_fd9p3",
+      "productId": "id_mvtbtry8_zoipx",
+      "productName": "Et aspernatur alias",
+      "sku": "VOLUPTATE EST IPSA",
+      "type": "PURCHASE",
+      "quantityChange": 93,
+      "previousStock": 0,
+      "newStock": 93,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:14:06.656Z"
     }
   ],
   "expenses": [
@@ -540,6 +674,33 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvtbtvto_c28lw",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbtry8_zoipx",
+      "details": "Created product: Et aspernatur alias (VOLUPTATE EST IPSA)",
+      "createdAt": "2026-10-29T09:14:11.676Z"
+    },
+    {
+      "_id": "id_mvtbpkqr_vminr",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbpgvk_e1c4t",
+      "details": "Created product: Ratione error rem mi (MAXIME EVENIET QUIA)",
+      "createdAt": "2026-10-29T09:10:50.691Z"
+    },
+    {
+      "_id": "id_mvtboezo_hq0zx",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbob4b_s7qux",
+      "details": "Created product: Est omnis totam qua (UNDE QUIDEM QUI SAEP)",
+      "createdAt": "2026-10-29T09:09:56.580Z"
+    },
     {
       "_id": "id_mvtbh7kx_huw78",
       "adminEmail": "dilshad@gmail.com",

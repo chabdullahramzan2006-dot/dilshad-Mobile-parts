@@ -204,10 +204,16 @@ export default function ShopApp() {
       if (prodRes.ok) {
         const data = await prodRes.json();
         setProducts(data.products || []);
+      } else {
+        const data = await prodRes.json().catch(() => ({}));
+        toast.error(data.error || "Could not refresh inventory. Please try again.");
       }
       if (custRes.ok) {
         const data = await custRes.json();
         setCustomers(data.customers || []);
+      } else {
+        const data = await custRes.json().catch(() => ({}));
+        toast.error(data.error || "Could not refresh customer accounts. Please try again.");
       }
       if (supRes.ok) {
         const data = await supRes.json();

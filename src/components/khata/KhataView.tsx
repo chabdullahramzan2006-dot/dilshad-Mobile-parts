@@ -26,7 +26,7 @@ import * as XLSX from "xlsx";
 interface KhataViewProps {
   customers: ICustomer[];
   settings: IShopSettings;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
 }
 
 export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
@@ -54,6 +54,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
   const [newCustPhone, setNewCustPhone] = useState("");
   const [newCustAddress, setNewCustAddress] = useState("");
   const [newCustOpeningBal, setNewCustOpeningBal] = useState<number | "">("");
+  const [isSavingCustomer, setIsSavingCustomer] = useState(false);
 
   // Filtered customer list
   const filteredCustomers = customers.filter(
@@ -114,7 +115,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
       setShowPaymentModal(false);
       setPaymentAmount("");
       setPaymentNotes("");
-      onRefresh();
+      await onRefresh();
 
       // Refresh local ledger
       const ledgerRes = await fetch(`/api/customers/${selectedCustomerId}/ledger`);
@@ -152,7 +153,7 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
       setAdjAmount("");
       setAdjReason("");
       setAdjNotes("");
-      onRefresh();
+      await onRefresh();
 
       const ledgerRes = await fetch(`/api/customers/${selectedCustomerId}/ledger`);
       const ledgerData = await ledgerRes.json();
@@ -620,11 +621,14 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
             />
           </div>
           <button
+            disabled={isSavingCustomer}
             onClick={async () => {
+              if (isSavingCustomer) return;
               if (!newCustName || !newCustPhone) {
                 toast.error("Name and Phone are required");
                 return;
               }
+              setIsSavingCustomer(true);
               try {
                 const res = await fetch("/api/customers", {
                   method: "POST",
@@ -645,15 +649,17 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
                 setNewCustPhone("");
                 setNewCustAddress("");
                 setNewCustOpeningBal("");
-                onRefresh();
                 setSelectedCustomerId(data.customer._id);
+                await onRefresh();
               } catch (err: any) {
                 toast.error(err.message);
+              } finally {
+                setIsSavingCustomer(false);
               }
             }}
-            className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition"
+            className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition"
           >
-            Create Customer Profile
+            {isSavingCustomer ? "Creating..." : "Create Customer Profile"}
           </button>
         </div>
       </Modal>

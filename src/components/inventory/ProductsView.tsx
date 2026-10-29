@@ -135,8 +135,8 @@ export function ProductsView({
         wholesalePrice: Number(formWholesalePrice) || 0,
         currentStock: Number(formStock) || 0,
         minStockAlert: Number(formMinAlert) || 5,
-        description: formDesc.trim(),
-        images: formImageUrl ? [formImageUrl.trim()] : [],
+        description: isEdit ? formDesc.trim() : "",
+        images: isEdit && formImageUrl ? [formImageUrl.trim()] : [],
       };
 
       const url = isEdit ? `/api/products/${editingProduct?._id}` : "/api/products";
@@ -582,32 +582,6 @@ export function ProductsView({
               onChange={(e) => setFormMinAlert(e.target.value === "" ? "" : Number(e.target.value))}
               placeholder="5"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-mono"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-              Image URL (Optional)
-            </label>
-            <input
-              type="text"
-              value={formImageUrl}
-              onChange={(e) => setFormImageUrl(e.target.value)}
-              placeholder="https://images.unsplash.com/..."
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-              Description / Quality Notes
-            </label>
-            <textarea
-              rows={2}
-              value={formDesc}
-              onChange={(e) => setFormDesc(e.target.value)}
-              placeholder="Original tester quality, fast charging, with mic..."
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
             />
           </div>
 

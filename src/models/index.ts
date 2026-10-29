@@ -177,6 +177,7 @@ const SaleSchema = new Schema(
 // --- 8. CUSTOMER MODEL ---
 const CustomerSchema = new Schema(
   {
+    customerId: { type: String, required: true, index: true },
     name: { type: String, required: true, trim: true, index: true },
     phone: { type: String, required: true, trim: true, index: true },
     address: { type: String },
@@ -196,6 +197,7 @@ const CustomerSchema = new Schema(
 // --- 9. CUSTOMER LEDGER ENTRY MODEL ---
 const CustomerLedgerEntrySchema = new Schema(
   {
+    ledgerEntryId: { type: String, required: true, index: true },
     customerId: { type: String, required: true, index: true },
     date: { type: Date, default: Date.now },
     type: {
@@ -219,6 +221,7 @@ const CustomerLedgerEntrySchema = new Schema(
 // --- 10. PAYMENT MODEL ---
 const PaymentSchema = new Schema(
   {
+    paymentId: { type: String, index: true },
     paymentNumber: { type: String, required: true, unique: true },
     type: { type: String, required: true, enum: ["CUSTOMER_PAYMENT", "SUPPLIER_PAYMENT"] },
     customerId: { type: String },

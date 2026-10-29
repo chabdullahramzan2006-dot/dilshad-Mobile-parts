@@ -22,7 +22,15 @@ import {
 } from "@/types";
 import { hashPassword } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Brand, Category, Product, Supplier } from "@/models";
+import {
+  Brand,
+  Category,
+  Customer,
+  CustomerLedgerEntry,
+  Payment,
+  Product,
+  Supplier,
+} from "@/models";
 import { preciseAdd, preciseSubtract, preciseMultiply } from "@/lib/currency";
 import { generateInvoiceNumber } from "@/lib/utils";
 
@@ -200,13 +208,27 @@ async function syncMongoCatalogToLocal() {
       });
     }
   }
+  const productsBySku = new Map<string, IProduct>();
+  for (const product of db.products) {
+    const key = product.sku.trim().toUpperCase() || product._id;
+    const current = productsBySku.get(key);
+    if (
+      !current ||
+      new Date(product.updatedAt || product.createdAt || 0).getTime() >=
+        new Date(current.updatedAt || current.createdAt || 0).getTime()
+    ) {
+      productsBySku.set(key, product);
+    }
+  }
+  const migrationProducts = [...productsBySku.values()];
+
   const mongo = await connectDB();
   if (!mongo) return null;
 
-  if (db.products.length) {
+  if (migrationProducts.length) {
     await Product.bulkWrite(
-      db.products.map((product) => {
-        const { _id, ...fields } = product;
+      migrationProducts.map((product) => {
+        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
         return {
           updateOne: {
             filter: { $or: [{ productId: _id }, { sku: product.sku }] },
@@ -224,7 +246,7 @@ async function syncMongoCatalogToLocal() {
   if (db.categories.length) {
     await Category.bulkWrite(
       db.categories.map((category) => {
-        const { _id, ...fields } = category;
+        const { _id, createdAt: _createdAt, ...fields } = category;
         return {
           updateOne: {
             filter: { $or: [{ categoryId: _id }, { slug: category.slug }] },
@@ -242,7 +264,7 @@ async function syncMongoCatalogToLocal() {
   if (db.brands.length) {
     await Brand.bulkWrite(
       db.brands.map((brand) => {
-        const { _id, ...fields } = brand;
+        const { _id, createdAt: _createdAt, ...fields } = brand;
         return {
           updateOne: {
             filter: { $or: [{ brandId: _id }, { slug: brand.slug }] },
@@ -269,7 +291,7 @@ async function persistMongoProducts(products: IProduct[]) {
   if (!(await connectDB()) || products.length === 0) return;
   await Product.bulkWrite(
     products.map((product) => {
-      const { _id, ...fields } = product;
+      const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
       return {
         updateOne: {
           filter: { productId: _id },
@@ -302,7 +324,7 @@ async function ensureMongoCategory(name: string, description?: string) {
     await Category.updateOne(
       { slug },
       (() => {
-        const { _id, ...fields } = category;
+        const { _id, createdAt: _createdAt, ...fields } = category;
         return { $setOnInsert: { ...fields, categoryId: _id } };
       })(),
       { upsert: true }
@@ -329,12 +351,183 @@ async function ensureMongoBrand(name: string, description?: string) {
     await Brand.updateOne(
       { slug },
       (() => {
-        const { _id, ...fields } = brand;
+        const { _id, createdAt: _createdAt, ...fields } = brand;
         return { $setOnInsert: { ...fields, brandId: _id } };
       })(),
       { upsert: true }
     );
   }
+}
+
+type MongoCustomerRecord = Omit<ICustomer, "_id" | "createdAt" | "updatedAt"> & {
+  customerId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
+};
+
+type MongoLedgerRecord = Omit<ICustomerLedgerEntry, "_id" | "createdAt"> & {
+  ledgerEntryId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+};
+
+type MongoPaymentRecord = Omit<IPayment, "_id" | "createdAt"> & {
+  paymentId?: string;
+  _id?: { toString(): string };
+  createdAt?: Date | string;
+};
+
+function mongoCustomerToRecord(customer: MongoCustomerRecord): ICustomer {
+  const { _id, customerId, createdAt, updatedAt, ...fields } = customer;
+  return {
+    ...fields,
+    _id: customerId || String(_id),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+    updatedAt: updatedAt ? new Date(updatedAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+function mongoLedgerToRecord(entry: MongoLedgerRecord): ICustomerLedgerEntry {
+  const { _id, ledgerEntryId, createdAt, ...fields } = entry;
+  return {
+    ...fields,
+    _id: ledgerEntryId || String(_id),
+    date: new Date(entry.date).toISOString(),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+function mongoPaymentToRecord(payment: MongoPaymentRecord): IPayment {
+  const { _id, paymentId, createdAt, ...fields } = payment;
+  return {
+    ...fields,
+    _id: paymentId || String(_id),
+    date: new Date(payment.date).toISOString(),
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+async function persistMongoCustomerData(
+  customers: ICustomer[],
+  entries: ICustomerLedgerEntry[] = [],
+  payments: IPayment[] = []
+) {
+  if (!(await connectDB())) return;
+
+  if (customers.length) {
+    await Customer.bulkWrite(
+      customers.map((customer) => {
+        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = customer;
+        return {
+          updateOne: {
+            filter: { customerId: _id },
+            update: { $set: fields, $setOnInsert: { customerId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (entries.length) {
+    await CustomerLedgerEntry.bulkWrite(
+      entries.map((entry) => {
+        const { _id, createdAt: _createdAt, ...fields } = entry;
+        return {
+          updateOne: {
+            filter: { ledgerEntryId: _id },
+            update: { $setOnInsert: { ...fields, ledgerEntryId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (payments.length) {
+    await Payment.bulkWrite(
+      payments.map((payment) => {
+        const { _id, createdAt: _createdAt, ...fields } = payment;
+        return {
+          updateOne: {
+            filter: { $or: [{ paymentId: _id }, { paymentNumber: payment.paymentNumber }] },
+            update: {
+              $set: { paymentId: _id },
+              $setOnInsert: fields,
+            },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+}
+
+async function syncMongoCustomersToLocal() {
+  const db = ensureDB();
+  const mongo = await connectDB();
+  if (!mongo) return null;
+
+  const customersByPhone = new Map<string, ICustomer>();
+  for (const customer of db.customers) {
+    const key = customer.phone.trim();
+    if (key && !customersByPhone.has(key)) customersByPhone.set(key, customer);
+  }
+  const legacyCustomers = [...customersByPhone.values()];
+  if (legacyCustomers.length) {
+    await Customer.bulkWrite(
+      legacyCustomers.map((customer) => {
+        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = customer;
+        return {
+          updateOne: {
+            filter: { $or: [{ customerId: _id }, { phone: customer.phone }] },
+            update: { $setOnInsert: { ...fields, customerId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (db.ledgerEntries.length) {
+    await CustomerLedgerEntry.bulkWrite(
+      db.ledgerEntries.map((entry) => {
+        const { _id, createdAt: _createdAt, ...fields } = entry;
+        return {
+          updateOne: {
+            filter: { ledgerEntryId: _id },
+            update: { $setOnInsert: { ...fields, ledgerEntryId: _id } },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+  if (db.payments.length) {
+    await Payment.bulkWrite(
+      db.payments.map((payment) => {
+        const { _id, createdAt: _createdAt, ...fields } = payment;
+        return {
+          updateOne: {
+            filter: { $or: [{ paymentId: _id }, { paymentNumber: payment.paymentNumber }] },
+            update: {
+              $setOnInsert: { ...fields, paymentId: _id },
+            },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false }
+    );
+  }
+
+  db.customers = (await Customer.find({}).lean()).map(mongoCustomerToRecord);
+  db.ledgerEntries = (await CustomerLedgerEntry.find({}).lean()).map(mongoLedgerToRecord);
+  db.payments = (await Payment.find({}).lean()).map(mongoPaymentToRecord);
+  return mongo;
 }
 
 // ==========================================
@@ -443,6 +636,10 @@ export async function getProductById(id: string): Promise<IProduct | null> {
 export async function createProduct(productData: Omit<IProduct, "_id" | "createdAt" | "updatedAt">): Promise<IProduct> {
   await syncMongoCatalogToLocal();
   const db = ensureDB();
+  const normalizedSku = productData.sku.trim().toUpperCase();
+  if (db.products.some((product) => product.sku.trim().toUpperCase() === normalizedSku)) {
+    throw new Error(`SKU '${normalizedSku}' is already assigned to a product.`);
+  }
   await ensureMongoCategory(productData.category);
   await ensureMongoBrand(productData.brand);
   const newProduct: IProduct = {
@@ -971,6 +1168,7 @@ export async function createSale(saleData: {
   customFields?: Record<string, any>;
 }): Promise<{ success: boolean; sale?: ISale; error?: string }> {
   await syncMongoCatalogToLocal();
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const invoiceNumber = generateInvoiceNumber("INV");
   let subtotal = 0;
@@ -1051,6 +1249,8 @@ export async function createSale(saleData: {
   }
 
   // Handle Customer Digital Khata
+  const ledgerStart = db.ledgerEntries.length;
+  const paymentStart = db.payments.length;
   let customer: ICustomer | undefined;
   if (saleData.customerId) {
     customer = db.customers.find((c) => c._id === saleData.customerId);
@@ -1154,6 +1354,13 @@ export async function createSale(saleData: {
 
   saveDB();
   await persistMongoProducts(db.products);
+  if (customer) {
+    await persistMongoCustomerData(
+      [customer],
+      db.ledgerEntries.slice(ledgerStart),
+      db.payments.slice(paymentStart)
+    );
+  }
   return { success: true, sale: newSale };
 }
 
@@ -1163,6 +1370,7 @@ export async function returnSale(
   returnReason: string
 ): Promise<{ success: boolean; error?: string }> {
   await syncMongoCatalogToLocal();
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const sale = db.sales.find((s) => s._id === saleId || s.invoiceNumber === saleId);
   if (!sale) return { success: false, error: "Sale invoice not found." };
@@ -1194,9 +1402,12 @@ export async function returnSale(
   }
 
   // 2. Reverse customer Khata ledger if credit was assigned
+  const ledgerStart = db.ledgerEntries.length;
+  let updatedCustomer: ICustomer | undefined;
   if (sale.customerId && sale.remainingAmount > 0) {
     const customer = db.customers.find((c) => c._id === sale.customerId);
     if (customer) {
+      updatedCustomer = customer;
       customer.outstandingBalance = Math.max(0, preciseSubtract(customer.outstandingBalance, sale.remainingAmount));
       if (customer.outstandingBalance === 0) {
         customer.status = "Settled";
@@ -1225,6 +1436,12 @@ export async function returnSale(
 
   saveDB();
   await persistMongoProducts(db.products);
+  if (updatedCustomer) {
+    await persistMongoCustomerData(
+      [updatedCustomer],
+      db.ledgerEntries.slice(ledgerStart)
+    );
+  }
   return { success: true };
 }
 
@@ -1237,6 +1454,7 @@ export async function getCustomers(options?: {
   isOverdue?: boolean;
   status?: string;
 }): Promise<ICustomer[]> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   let list = [...db.customers];
 
@@ -1258,6 +1476,7 @@ export async function getCustomers(options?: {
 }
 
 export async function getCustomerById(id: string): Promise<ICustomer | null> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   return db.customers.find((c) => c._id === id) || null;
 }
@@ -1271,6 +1490,7 @@ export async function createCustomer(data: {
   notes?: string;
   customFields?: Record<string, any>;
 }): Promise<{ success: boolean; customer?: ICustomer; error?: string }> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const existing = db.customers.find((c) => c.phone.trim() === data.phone.trim());
   if (existing) {
@@ -1313,10 +1533,13 @@ export async function createCustomer(data: {
   }
 
   saveDB();
+  const openingEntry = opening > 0 ? db.ledgerEntries[db.ledgerEntries.length - 1] : undefined;
+  await persistMongoCustomerData([newCust], openingEntry ? [openingEntry] : []);
   return { success: true, customer: newCust };
 }
 
 export async function updateCustomer(id: string, updates: Partial<ICustomer>): Promise<ICustomer | null> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const index = db.customers.findIndex((c) => c._id === id);
   if (index === -1) return null;
@@ -1329,10 +1552,12 @@ export async function updateCustomer(id: string, updates: Partial<ICustomer>): P
   };
   db.customers[index] = updated;
   saveDB();
+  await persistMongoCustomerData([updated]);
   return updated;
 }
 
 export async function getCustomerLedger(customerId: string): Promise<ICustomerLedgerEntry[]> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   return db.ledgerEntries
     .filter((entry) => entry.customerId === customerId)
@@ -1349,6 +1574,7 @@ export async function addCustomerPayment(paymentData: {
   notes?: string;
   receivedBy?: string;
 }): Promise<{ success: boolean; newBalance?: number; error?: string }> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const customer = db.customers.find((c) => c._id === paymentData.customerId);
   if (!customer) return { success: false, error: "Customer not found." };
@@ -1369,7 +1595,7 @@ export async function addCustomerPayment(paymentData: {
   }
 
   // Immutable Ledger Credit Entry
-  db.ledgerEntries.push({
+  const ledgerEntry: ICustomerLedgerEntry = {
     _id: generateId(),
     customerId: customer._id,
     date: paymentData.date || new Date().toISOString(),
@@ -1381,10 +1607,11 @@ export async function addCustomerPayment(paymentData: {
     balanceAfter: newBal,
     notes: paymentData.notes || paymentData.reference,
     createdAt: new Date().toISOString(),
-  });
+  };
+  db.ledgerEntries.push(ledgerEntry);
 
   // Record Payment Transaction
-  db.payments.push({
+  const payment: IPayment = {
     _id: generateId(),
     paymentNumber: generateInvoiceNumber("REC"),
     type: "CUSTOMER_PAYMENT",
@@ -1397,9 +1624,11 @@ export async function addCustomerPayment(paymentData: {
     notes: paymentData.notes,
     receivedBy: paymentData.receivedBy || "Admin",
     createdAt: new Date().toISOString(),
-  });
+  };
+  db.payments.push(payment);
 
   saveDB();
+  await persistMongoCustomerData([customer], [ledgerEntry], [payment]);
   return { success: true, newBalance: newBal };
 }
 
@@ -1411,6 +1640,7 @@ export async function addManualKhataAdjustment(adjustment: {
   reason: string;
   notes?: string;
 }): Promise<{ success: boolean; newBalance?: number; error?: string }> {
+  await syncMongoCustomersToLocal();
   const db = ensureDB();
   const customer = db.customers.find((c) => c._id === adjustment.customerId);
   if (!customer) return { success: false, error: "Customer not found." };
@@ -1438,7 +1668,7 @@ export async function addManualKhataAdjustment(adjustment: {
     if (newBal === 0) customer.status = "Settled";
   }
 
-  db.ledgerEntries.push({
+  const ledgerEntry: ICustomerLedgerEntry = {
     _id: generateId(),
     customerId: customer._id,
     date: new Date().toISOString(),
@@ -1450,9 +1680,11 @@ export async function addManualKhataAdjustment(adjustment: {
     balanceAfter: newBal,
     notes: adjustment.notes,
     createdAt: new Date().toISOString(),
-  });
+  };
+  db.ledgerEntries.push(ledgerEntry);
 
   saveDB();
+  await persistMongoCustomerData([customer], [ledgerEntry]);
   return { success: true, newBalance: newBal };
 }
 
