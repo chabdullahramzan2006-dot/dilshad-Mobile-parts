@@ -66,6 +66,7 @@ export function ProductsView({
   const [formMinAlert, setFormMinAlert] = useState<number | "">(5);
   const [formDesc, setFormDesc] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   // Filter products
   const filteredProducts = products.filter((p) => {
@@ -107,11 +108,21 @@ export function ProductsView({
   };
 
   const handleSaveProduct = async (isEdit: boolean) => {
-    if (!formName.trim() || !formSku.trim() || !formCategory.trim() || !formBrand.trim() || !formPurchasePrice || !formSellingPrice) {
+    if (
+      !formName.trim() ||
+      !formSku.trim() ||
+      !formCategory.trim() ||
+      !formBrand.trim() ||
+      formPurchasePrice === "" ||
+      formSellingPrice === "" ||
+      !Number.isFinite(Number(formPurchasePrice)) ||
+      !Number.isFinite(Number(formSellingPrice))
+    ) {
       toast.error("Please fill all required fields, including category and brand.");
       return;
     }
 
+    setIsSavingProduct(true);
     try {
       const payload = {
         name: formName.trim(),
@@ -137,8 +148,8 @@ export function ProductsView({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Unable to save product (HTTP ${res.status})`);
 
       toast.success(isEdit ? "Product updated!" : "Product created successfully!");
       setShowAddModal(false);
@@ -146,6 +157,8 @@ export function ProductsView({
       await onRefresh();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to save product");
+    } finally {
+      setIsSavingProduct(false);
     }
   };
 
@@ -600,10 +613,16 @@ export function ProductsView({
 
           <div className="md:col-span-2 pt-2">
             <button
+              type="button"
+              disabled={isSavingProduct}
               onClick={() => handleSaveProduct(Boolean(showEditModal))}
-              className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
+              className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition shadow-xs"
             >
-              {showEditModal ? "Save Changes" : "Create Product"}
+              {isSavingProduct
+                ? "Saving..."
+                : showEditModal
+                  ? "Save Changes"
+                  : "Create Product"}
             </button>
           </div>
         </div>

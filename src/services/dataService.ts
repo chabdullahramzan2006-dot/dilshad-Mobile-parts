@@ -209,8 +209,11 @@ async function syncMongoCatalogToLocal() {
         const { _id, ...fields } = product;
         return {
           updateOne: {
-            filter: { productId: _id },
-            update: { $setOnInsert: { ...fields, productId: _id } },
+            filter: { $or: [{ productId: _id }, { sku: product.sku }] },
+            update: {
+              $set: { productId: _id },
+              $setOnInsert: fields,
+            },
             upsert: true,
           },
         };
@@ -224,8 +227,11 @@ async function syncMongoCatalogToLocal() {
         const { _id, ...fields } = category;
         return {
           updateOne: {
-            filter: { categoryId: _id },
-            update: { $setOnInsert: { ...fields, categoryId: _id } },
+            filter: { $or: [{ categoryId: _id }, { slug: category.slug }] },
+            update: {
+              $set: { categoryId: _id },
+              $setOnInsert: fields,
+            },
             upsert: true,
           },
         };
@@ -239,8 +245,11 @@ async function syncMongoCatalogToLocal() {
         const { _id, ...fields } = brand;
         return {
           updateOne: {
-            filter: { brandId: _id },
-            update: { $setOnInsert: { ...fields, brandId: _id } },
+            filter: { $or: [{ brandId: _id }, { slug: brand.slug }] },
+            update: {
+              $set: { brandId: _id },
+              $setOnInsert: fields,
+            },
             upsert: true,
           },
         };

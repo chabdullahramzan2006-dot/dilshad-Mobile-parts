@@ -20,6 +20,20 @@
       "slug": "charging-flex-cables",
       "productCount": 0,
       "createdAt": "2026-10-29T08:56:34.187Z"
+    },
+    {
+      "_id": "id_mvtbg4vp_14ovf",
+      "name": "Unde exercitation re",
+      "slug": "unde-exercitation-re",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:03:30.229Z"
+    },
+    {
+      "_id": "id_mvtbgvz0_eg2q0",
+      "name": "Quo ex deserunt offi",
+      "slug": "quo-ex-deserunt-offi",
+      "productCount": 0,
+      "createdAt": "2026-10-29T09:04:05.340Z"
     }
   ],
   "brands": [
@@ -28,6 +42,18 @@
       "name": "Samsung",
       "slug": "samsung",
       "createdAt": "2026-10-29T08:56:39.247Z"
+    },
+    {
+      "_id": "id_mvtbg8qy_dsjiy",
+      "name": "Omnis ipsum explica",
+      "slug": "omnis-ipsum-explica",
+      "createdAt": "2026-10-29T09:03:35.242Z"
+    },
+    {
+      "_id": "id_mvtbgzuf_9bxe4",
+      "name": "Aliquip commodo anim",
+      "slug": "aliquip-commodo-anim",
+      "createdAt": "2026-10-29T09:04:10.359Z"
     }
   ],
   "products": [
@@ -69,6 +95,158 @@
       ],
       "createdAt": "2026-10-29T08:56:44.259Z",
       "updatedAt": "2026-10-29T08:56:44.259Z"
+    },
+    {
+      "_id": "id_mvtbgcm7_3lj3x",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:40.255Z",
+      "updatedAt": "2026-10-29T09:03:40.255Z"
+    },
+    {
+      "_id": "id_mvtbgcmc_7fpm5",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:40.260Z",
+      "updatedAt": "2026-10-29T09:03:40.260Z"
+    },
+    {
+      "_id": "id_mvtbgcmd_funxc",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:40.261Z",
+      "updatedAt": "2026-10-29T09:03:40.261Z"
+    },
+    {
+      "_id": "id_mvtbgcmf_hk30e",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:40.263Z",
+      "updatedAt": "2026-10-29T09:03:40.263Z"
+    },
+    {
+      "_id": "id_mvtbgcmg_39pvx",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:40.264Z",
+      "updatedAt": "2026-10-29T09:03:40.264Z"
+    },
+    {
+      "_id": "id_mvtbgghd_0t9h0",
+      "name": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "category": "Unde exercitation re",
+      "brand": "Omnis ipsum explica",
+      "modelCompatibility": "Explicabo Dolor seq",
+      "purchasePrice": 83,
+      "sellingPrice": 2,
+      "wholesalePrice": 83,
+      "currentStock": 61,
+      "minStockAlert": 76,
+      "description": "Atque omnis expedita",
+      "images": [
+        "Iure aspernatur et q"
+      ],
+      "createdAt": "2026-10-29T09:03:45.265Z",
+      "updatedAt": "2026-10-29T09:03:45.265Z"
+    },
+    {
+      "_id": "id_mvtbh3pj_22kze",
+      "name": "Natus fugiat duis vo",
+      "sku": "INCIDUNT MOLESTIAS",
+      "category": "Quo ex deserunt offi",
+      "brand": "Aliquip commodo anim",
+      "modelCompatibility": "Accusamus iusto rati",
+      "purchasePrice": 54,
+      "sellingPrice": 99,
+      "wholesalePrice": 79,
+      "currentStock": 16,
+      "minStockAlert": 77,
+      "description": "Ut rerum expedita en",
+      "images": [
+        "Do nostrum illum vo"
+      ],
+      "createdAt": "2026-10-29T09:04:15.367Z",
+      "updatedAt": "2026-10-29T09:04:15.367Z"
+    },
+    {
+      "_id": "id_mvtbh3ps_yx052",
+      "name": "Natus fugiat duis vo",
+      "sku": "INCIDUNT MOLESTIAS",
+      "category": "Quo ex deserunt offi",
+      "brand": "Aliquip commodo anim",
+      "modelCompatibility": "Accusamus iusto rati",
+      "purchasePrice": 54,
+      "sellingPrice": 99,
+      "wholesalePrice": 79,
+      "currentStock": 16,
+      "minStockAlert": 77,
+      "description": "Ut rerum expedita en",
+      "images": [
+        "Do nostrum illum vo"
+      ],
+      "createdAt": "2026-10-29T09:04:15.376Z",
+      "updatedAt": "2026-10-29T09:04:15.376Z"
     }
   ],
   "suppliers": [
@@ -212,6 +390,110 @@
       "reason": "Initial Product Creation Stock",
       "performedBy": "Admin",
       "createdAt": "2026-10-29T08:56:44.259Z"
+    },
+    {
+      "_id": "id_mvtbgcm7_7mbmh",
+      "productId": "id_mvtbgcm7_3lj3x",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:40.255Z"
+    },
+    {
+      "_id": "id_mvtbgcmc_p2sts",
+      "productId": "id_mvtbgcmc_7fpm5",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:40.260Z"
+    },
+    {
+      "_id": "id_mvtbgcmd_91byu",
+      "productId": "id_mvtbgcmd_funxc",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:40.261Z"
+    },
+    {
+      "_id": "id_mvtbgcmf_6fw0z",
+      "productId": "id_mvtbgcmf_hk30e",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:40.263Z"
+    },
+    {
+      "_id": "id_mvtbgcmg_40gwe",
+      "productId": "id_mvtbgcmg_39pvx",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:40.264Z"
+    },
+    {
+      "_id": "id_mvtbgghd_c0zqz",
+      "productId": "id_mvtbgghd_0t9h0",
+      "productName": "Quisquam rerum aperi",
+      "sku": "EST COMMODI VITAE S",
+      "type": "PURCHASE",
+      "quantityChange": 61,
+      "previousStock": 0,
+      "newStock": 61,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:03:45.265Z"
+    },
+    {
+      "_id": "id_mvtbh3pj_oiqi4",
+      "productId": "id_mvtbh3pj_22kze",
+      "productName": "Natus fugiat duis vo",
+      "sku": "INCIDUNT MOLESTIAS",
+      "type": "PURCHASE",
+      "quantityChange": 16,
+      "previousStock": 0,
+      "newStock": 16,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:04:15.367Z"
+    },
+    {
+      "_id": "id_mvtbh3ps_qweuc",
+      "productId": "id_mvtbh3ps_yx052",
+      "productName": "Natus fugiat duis vo",
+      "sku": "INCIDUNT MOLESTIAS",
+      "type": "PURCHASE",
+      "quantityChange": 16,
+      "previousStock": 0,
+      "newStock": 16,
+      "reason": "Initial Product Creation Stock",
+      "performedBy": "Admin",
+      "createdAt": "2026-10-29T09:04:15.376Z"
     }
   ],
   "expenses": [
@@ -258,6 +540,78 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvtbh7kx_huw78",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbh3ps_yx052",
+      "details": "Created product: Natus fugiat duis vo (INCIDUNT MOLESTIAS)",
+      "createdAt": "2026-10-29T09:04:20.385Z"
+    },
+    {
+      "_id": "id_mvtbh7ku_9d40y",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbh3pj_22kze",
+      "details": "Created product: Natus fugiat duis vo (INCIDUNT MOLESTIAS)",
+      "createdAt": "2026-10-29T09:04:20.382Z"
+    },
+    {
+      "_id": "id_mvtbgkcq_l5koq",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgghd_0t9h0",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:50.282Z"
+    },
+    {
+      "_id": "id_mvtbgghr_4ra7l",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcmg_39pvx",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:45.279Z"
+    },
+    {
+      "_id": "id_mvtbggho_f6suk",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcmf_hk30e",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:45.276Z"
+    },
+    {
+      "_id": "id_mvtbgghm_ffib8",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcmd_funxc",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:45.274Z"
+    },
+    {
+      "_id": "id_mvtbgghl_h88l1",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcmc_7fpm5",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:45.273Z"
+    },
+    {
+      "_id": "id_mvtbgghk_7bpwk",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PRODUCT_CREATED",
+      "entityType": "Product",
+      "entityId": "id_mvtbgcm7_3lj3x",
+      "details": "Created product: Quisquam rerum aperi (EST COMMODI VITAE S)",
+      "createdAt": "2026-10-29T09:03:45.272Z"
+    },
     {
       "_id": "id_mvtb7k29_iu67j",
       "adminEmail": "dilshad@gmail.com",
