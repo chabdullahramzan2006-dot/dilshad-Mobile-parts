@@ -228,7 +228,7 @@ async function syncMongoCatalogToLocal() {
   if (migrationProducts.length) {
     await Product.bulkWrite(
       migrationProducts.map((product) => {
-        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
+        const { _id, ...fields } = product;
         return {
           updateOne: {
             filter: { $or: [{ productId: _id }, { sku: product.sku }] },
@@ -237,16 +237,16 @@ async function syncMongoCatalogToLocal() {
               $setOnInsert: fields,
             },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (db.categories.length) {
     await Category.bulkWrite(
       db.categories.map((category) => {
-        const { _id, createdAt: _createdAt, ...fields } = category;
+        const { _id, ...fields } = category;
         return {
           updateOne: {
             filter: { $or: [{ categoryId: _id }, { slug: category.slug }] },
@@ -255,16 +255,16 @@ async function syncMongoCatalogToLocal() {
               $setOnInsert: fields,
             },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (db.brands.length) {
     await Brand.bulkWrite(
       db.brands.map((brand) => {
-        const { _id, createdAt: _createdAt, ...fields } = brand;
+        const { _id, ...fields } = brand;
         return {
           updateOne: {
             filter: { $or: [{ brandId: _id }, { slug: brand.slug }] },
@@ -273,10 +273,10 @@ async function syncMongoCatalogToLocal() {
               $setOnInsert: fields,
             },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
 
@@ -291,16 +291,23 @@ async function persistMongoProducts(products: IProduct[]) {
   if (!(await connectDB()) || products.length === 0) return;
   await Product.bulkWrite(
     products.map((product) => {
-      const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = product;
+      const { _id, ...fields } = product;
       return {
         updateOne: {
           filter: { productId: _id },
-          update: { $set: { ...fields, productId: _id } },
+          update: {
+            $set: {
+              ...fields,
+              productId: _id,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: { createdAt: product.createdAt ? new Date(product.createdAt) : new Date() },
+          },
           upsert: true,
+          timestamps: false,
         },
       };
-    }),
-    { ordered: false }
+    })
   );
 }
 
@@ -324,10 +331,16 @@ async function ensureMongoCategory(name: string, description?: string) {
     await Category.updateOne(
       { slug },
       (() => {
-        const { _id, createdAt: _createdAt, ...fields } = category;
-        return { $setOnInsert: { ...fields, categoryId: _id } };
+        const { _id, ...fields } = category;
+        return {
+          $setOnInsert: {
+            ...fields,
+            categoryId: _id,
+            createdAt: category.createdAt ? new Date(category.createdAt) : new Date(),
+          },
+        };
       })(),
-      { upsert: true }
+      { upsert: true, timestamps: false }
     );
   }
 }
@@ -351,10 +364,16 @@ async function ensureMongoBrand(name: string, description?: string) {
     await Brand.updateOne(
       { slug },
       (() => {
-        const { _id, createdAt: _createdAt, ...fields } = brand;
-        return { $setOnInsert: { ...fields, brandId: _id } };
+        const { _id, ...fields } = brand;
+        return {
+          $setOnInsert: {
+            ...fields,
+            brandId: _id,
+            createdAt: brand.createdAt ? new Date(brand.createdAt) : new Date(),
+          },
+        };
       })(),
-      { upsert: true }
+      { upsert: true, timestamps: false }
     );
   }
 }
@@ -418,49 +437,64 @@ async function persistMongoCustomerData(
   if (customers.length) {
     await Customer.bulkWrite(
       customers.map((customer) => {
-        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = customer;
+        const { _id, createdAt, updatedAt: _updatedAt, ...fields } = customer;
         return {
           updateOne: {
             filter: { customerId: _id },
-            update: { $set: fields, $setOnInsert: { customerId: _id } },
+            update: {
+              $set: { ...fields, updatedAt: new Date() },
+              $setOnInsert: {
+                customerId: _id,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+              },
+            },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (entries.length) {
     await CustomerLedgerEntry.bulkWrite(
       entries.map((entry) => {
-        const { _id, createdAt: _createdAt, ...fields } = entry;
+        const { _id, createdAt, ...fields } = entry;
         return {
           updateOne: {
             filter: { ledgerEntryId: _id },
-            update: { $setOnInsert: { ...fields, ledgerEntryId: _id } },
+            update: {
+              $setOnInsert: {
+                ...fields,
+                ledgerEntryId: _id,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+              },
+            },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (payments.length) {
     await Payment.bulkWrite(
       payments.map((payment) => {
-        const { _id, createdAt: _createdAt, ...fields } = payment;
+        const { _id, createdAt, ...fields } = payment;
         return {
           updateOne: {
             filter: { $or: [{ paymentId: _id }, { paymentNumber: payment.paymentNumber }] },
             update: {
               $set: { paymentId: _id },
-              $setOnInsert: fields,
+              $setOnInsert: {
+                ...fields,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+              },
             },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
 }
@@ -479,48 +513,65 @@ async function syncMongoCustomersToLocal() {
   if (legacyCustomers.length) {
     await Customer.bulkWrite(
       legacyCustomers.map((customer) => {
-        const { _id, createdAt: _createdAt, updatedAt: _updatedAt, ...fields } = customer;
+        const { _id, createdAt, updatedAt, ...fields } = customer;
         return {
           updateOne: {
             filter: { $or: [{ customerId: _id }, { phone: customer.phone }] },
-            update: { $setOnInsert: { ...fields, customerId: _id } },
+            update: {
+              $setOnInsert: {
+                ...fields,
+                customerId: _id,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+                updatedAt: updatedAt ? new Date(updatedAt) : new Date(),
+              },
+            },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (db.ledgerEntries.length) {
     await CustomerLedgerEntry.bulkWrite(
       db.ledgerEntries.map((entry) => {
-        const { _id, createdAt: _createdAt, ...fields } = entry;
+        const { _id, createdAt, ...fields } = entry;
         return {
           updateOne: {
             filter: { ledgerEntryId: _id },
-            update: { $setOnInsert: { ...fields, ledgerEntryId: _id } },
+            update: {
+              $setOnInsert: {
+                ...fields,
+                ledgerEntryId: _id,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+              },
+            },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
   if (db.payments.length) {
     await Payment.bulkWrite(
       db.payments.map((payment) => {
-        const { _id, createdAt: _createdAt, ...fields } = payment;
+        const { _id, createdAt, ...fields } = payment;
         return {
           updateOne: {
             filter: { $or: [{ paymentId: _id }, { paymentNumber: payment.paymentNumber }] },
             update: {
-              $setOnInsert: { ...fields, paymentId: _id },
+              $setOnInsert: {
+                ...fields,
+                paymentId: _id,
+                createdAt: createdAt ? new Date(createdAt) : new Date(),
+              },
             },
             upsert: true,
+            timestamps: false,
           },
         };
-      }),
-      { ordered: false }
+      })
     );
   }
 
