@@ -29,6 +29,7 @@ import {
   RefreshCw,
   Boxes,
   Users,
+  Download,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import {
@@ -81,6 +82,11 @@ const ACTIVE_TABS = [
 ] as const;
 
 type ActiveTab = (typeof ACTIVE_TABS)[number];
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed"; platform: string }>;
+}
 
 function getTabFromHash(): ActiveTab {
   const hashTab = window.location.hash.slice(1);
@@ -144,8 +150,9 @@ export default function ShopApp() {
 
   // Login Form State
   const [loginEmail, setLoginEmail] = useState("dilshad@gmail.com");
-  const [loginPassword, setLoginPassword] = useState("admin123");
+  const [loginPassword, setLoginPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   // Forced Password Change Modal State
   const [mustChangePassword, setMustChangePassword] = useState(false);
@@ -179,6 +186,25 @@ export default function ShopApp() {
 
   useEffect(() => {
     checkAuth();
+  }, []);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+    const handleAppInstalled = () => {
+      setInstallPrompt(null);
+      toast.success("Dilshad Mobile Parts was installed on your desktop.");
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
   }, []);
 
   useEffect(() => {
@@ -268,6 +294,30 @@ export default function ShopApp() {
       toast.error(err.message || "Login failed");
     } finally {
       setIsLoggingIn(false);
+    }
+  };
+
+  const handleInstallApp = async () => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      toast.info("Dilshad Mobile Parts is already installed on this desktop.");
+      return;
+    }
+
+    if (!installPrompt) {
+      toast.info("Open your browser menu and choose Install Dilshad Mobile Parts.");
+      return;
+    }
+
+    try {
+      await installPrompt.prompt();
+      const { outcome } = await installPrompt.userChoice;
+      if (outcome === "accepted") {
+        toast.success("Dilshad Mobile Parts is being installed on your desktop.");
+      }
+      setInstallPrompt(null);
+    } catch (error) {
+      toast.error("Could not start the app installation. Please try again.");
+      console.error("App installation failed:", error);
     }
   };
 
@@ -372,12 +422,17 @@ export default function ShopApp() {
             </button>
           </form>
 
+          <button
+            type="button"
+            onClick={handleInstallApp}
+            className="w-full mt-4 flex items-center justify-center gap-2 py-2.5 border border-slate-600 hover:border-sky-400 text-slate-200 hover:text-white rounded-xl text-sm font-semibold transition"
+          >
+            <Download className="w-4 h-4" />
+            Download app for desktop
+          </button>
+
           {/* Development credentials helper pill */}
-          <div className="mt-6 p-3 bg-white/5 border border-white/10 rounded-xl text-center text-xs text-slate-400">
-            <p className="font-semibold text-sky-400 mb-1">Initial Development Credentials:</p>
-            <p className="font-mono text-[11px]">Email: dilshad@gmail.com</p>
-            <p className="font-mono text-[11px]">Password: admin123</p>
-          </div>
+      
         </div>
       </div>
     );

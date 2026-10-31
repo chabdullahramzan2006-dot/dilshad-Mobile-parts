@@ -4,13 +4,13 @@
       "_id": "id_mvrsimnw_rsz1x",
       "name": "Dilshad Khan",
       "email": "dilshad@gmail.com",
-      "passwordHash": "$2b$10$g9UbX0RUzz4cSYy8PxXbHerykIT1xfhiQ7PTNYzP6Own4jxMq/rI.",
+      "passwordHash": "$2b$10$3mlSUIErZgxNzcmLAo97pujxsmITxmd1FTPB3JO4ODEmg.gk748na",
       "role": "admin",
       "mustChangePassword": false,
       "securityQuestion": "What is your shop name?",
       "securityAnswerHash": "$2b$10$fhZ5g7FK4BqrI0oCYH./IOhZkIRtI50yeCpxa43O/1dXF/qWpLg0e",
       "createdAt": "2026-10-28T07:25:48.116Z",
-      "updatedAt": "2026-10-28T07:25:59.472Z"
+      "updatedAt": "2026-10-31T05:57:47.830Z"
     }
   ],
   "categories": [
@@ -718,6 +718,111 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mvvzpbon_285l1",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-31T05:58:02.087Z"
+    },
+    {
+      "_id": "id_mvvzp6bz_bhzzm",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGOUT",
+      "entityType": "Admin",
+      "details": "Admin logged out",
+      "createdAt": "2026-10-31T05:57:55.151Z"
+    },
+    {
+      "_id": "id_mvvzp0ou_pbscb",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "PASSWORD_CHANGED",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Password successfully updated",
+      "createdAt": "2026-10-31T05:57:47.838Z"
+    },
+    {
+      "_id": "id_mvvyzyax_5hd8e",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-31T05:38:18.345Z"
+    },
+    {
+      "_id": "id_mvvyzrgz_0xal0",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_FAILED",
+      "entityType": "Admin",
+      "details": "Incorrect password attempt",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-31T05:38:09.491Z"
+    },
+    {
+      "_id": "id_mvvyzldm_j8f7i",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_FAILED",
+      "entityType": "Admin",
+      "details": "Incorrect password attempt",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-31T05:38:01.594Z"
+    },
+    {
+      "_id": "id_mvtprvtu_rg910",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGOUT",
+      "entityType": "Admin",
+      "details": "Admin logged out",
+      "createdAt": "2026-10-29T15:44:32.994Z"
+    },
+    {
+      "_id": "id_mvtpr8n3_u84ks",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-29T15:44:02.943Z"
+    },
+    {
+      "_id": "id_mvtpapij_maat4",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGOUT",
+      "entityType": "Admin",
+      "details": "Admin logged out",
+      "createdAt": "2026-10-29T15:31:11.659Z"
+    },
+    {
+      "_id": "id_mvtpal53_a06ui",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+      "createdAt": "2026-10-29T15:31:05.991Z"
+    },
+    {
+      "_id": "id_mvtpafnb_fqcwo",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGOUT",
+      "entityType": "Admin",
+      "details": "Admin logged out",
+      "createdAt": "2026-10-29T15:30:58.871Z"
+    },
     {
       "_id": "id_mvtc8dgz_afzph",
       "adminEmail": "dilshad@gmail.com",
