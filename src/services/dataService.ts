@@ -1184,12 +1184,30 @@ export async function getSales(options?: {
   }
   if (options?.search) {
     const q = options.search.toLowerCase().trim();
-    list = list.filter(
-      (s) =>
-        s.invoiceNumber.toLowerCase().includes(q) ||
-        s.customerName.toLowerCase().includes(q) ||
-        (s.customerPhone && s.customerPhone.includes(q))
+    const qDigits = q.replace(/\D/g, "").replace(/^92/, "").replace(/^0/, "");
+    const matchedCustomerIds = new Set(
+      db.customers
+        .filter((c) => {
+          const phoneDigits = c.phone.replace(/\D/g, "").replace(/^92/, "").replace(/^0/, "");
+          return (
+            c.name.toLowerCase().includes(q) ||
+            c.phone.toLowerCase().includes(q) ||
+            (!!qDigits && (phoneDigits.includes(qDigits) || qDigits.includes(phoneDigits)))
+          );
+        })
+        .map((c) => c._id)
     );
+    list = list.filter((s) => {
+      if (s.invoiceNumber.toLowerCase().includes(q)) return true;
+      if (s.customerName.toLowerCase().includes(q)) return true;
+      if (s.customerPhone && s.customerPhone.toLowerCase().includes(q)) return true;
+      if (s.customerId && matchedCustomerIds.has(s.customerId)) return true;
+      if (qDigits && s.customerPhone) {
+        const saleDigits = s.customerPhone.replace(/\D/g, "").replace(/^92/, "").replace(/^0/, "");
+        if (saleDigits.includes(qDigits) || qDigits.includes(saleDigits)) return true;
+      }
+      return false;
+    });
   }
 
   return list.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());

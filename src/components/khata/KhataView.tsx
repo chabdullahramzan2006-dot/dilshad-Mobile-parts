@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { ICustomer, ICustomerLedgerEntry, ISale, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
-import { formatDate } from "@/lib/utils";
+import { formatDate, phonesMatch } from "@/lib/utils";
 import {
   BookOpen,
   Search,
@@ -19,6 +19,9 @@ import {
   MapPin,
   Sliders,
   Package,
+  RotateCcw,
+  AlertCircle,
+  Wallet,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/Modal";
@@ -58,6 +61,11 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
   const [newCustOpeningBal, setNewCustOpeningBal] = useState<number | "">("");
   const [isSavingCustomer, setIsSavingCustomer] = useState(false);
 
+  const [selectedSaleForReturn, setSelectedSaleForReturn] = useState<ISale | null>(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnReason, setReturnReason] = useState("");
+  const [isReturning, setIsReturning] = useState(false);
+
   // Filtered customer list
   const filteredCustomers = customers.filter(
     (c) =>
@@ -67,24 +75,29 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
 
   const selectedCustomer = customers.find((c) => c._id === selectedCustomerId) || null;
 
-  const customerCreditSales = useMemo(() => {
-    if (!selectedCustomerId) return [];
+  const customerSales = useMemo(() => {
+    if (!selectedCustomer) return [];
     return sales
-      .filter(
-        (s) =>
-          s.customerId === selectedCustomerId &&
-          !s.isReturned &&
-          s.remainingAmount > 0
-      )
+      .filter((s) => {
+        if (s.isReturned) return false;
+        if (selectedCustomer._id && s.customerId === selectedCustomer._id) return true;
+        if (phonesMatch(s.customerPhone, selectedCustomer.phone)) return true;
+        return false;
+      })
       .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
-  }, [sales, selectedCustomerId]);
+  }, [sales, selectedCustomer]);
 
-  const creditItemsTaken = useMemo(() => {
+  const customerCreditSales = useMemo(
+    () => customerSales.filter((s) => s.remainingAmount > 0),
+    [customerSales]
+  );
+
+  const itemsTaken = useMemo(() => {
     const map = new Map<
       string,
       { productName: string; sku: string; quantity: number; amount: number }
     >();
-    for (const sale of customerCreditSales) {
+    for (const sale of customerSales) {
       for (const item of sale.items) {
         const key = item.productId || item.sku || item.productName;
         const existing = map.get(key);
@@ -102,7 +115,7 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
       }
     }
     return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
-  }, [customerCreditSales]);
+  }, [customerSales]);
 
   const ledgerTotals = useMemo(() => {
     const totalUdhaarTaken = ledgerEntries.reduce((sum, e) => sum + (e.debit || 0), 0);
@@ -136,6 +149,34 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
 
     fetchLedger();
   }, [selectedCustomerId]);
+
+  const handleProcessReturn = async () => {
+    if (!selectedSaleForReturn || !returnReason.trim()) {
+      toast.error("Please enter a return reason.");
+      return;
+    }
+
+    setIsReturning(true);
+    try {
+      const res = await fetch(`/api/sales/${selectedSaleForReturn._id}/return`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: returnReason }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      toast.success("Sale return done! Stock restored and Khata updated.");
+      setShowReturnModal(false);
+      setReturnReason("");
+      setSelectedSaleForReturn(null);
+      await onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to process return");
+    } finally {
+      setIsReturning(false);
+    }
+  };
 
   // Handle Receive Payment
   const handleReceivePayment = async () => {
@@ -424,52 +465,75 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
               <div className="px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between gap-2">
                 <p className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
                   <Package className="w-3.5 h-3.5 text-amber-600" />
-                  Credit pe kya kya liya (udhaar invoices)
+                  Customer ne kya liya + Sale Return
                 </p>
                 <span className="text-[10px] font-mono text-slate-500">
-                  {customerCreditSales.length} open credit bill
-                  {customerCreditSales.length === 1 ? "" : "s"}
+                  {customerSales.length} sale
+                  {customerSales.length === 1 ? "" : "s"}
+                  {customerCreditSales.length > 0
+                    ? ` · ${customerCreditSales.length} udhaar`
+                    : ""}
                 </span>
               </div>
 
-              {customerCreditSales.length === 0 ? (
-                <p className="px-3 py-4 text-xs text-slate-400">
-                  Is customer ke open credit sales nahi hain. Poora ledger neeche dekhein.
+              {customerSales.length === 0 ? (
+                <p className="px-3 py-4 text-xs text-slate-500 leading-relaxed">
+                  Is customer ki koi Sale Invoice nahi mili. Agar sirf opening balance / manual udhaar
+                  hai to Return nahi hoga — Return ke liye pehle POS se bill banana zaroori hai.
                 </p>
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100 dark:divide-slate-800">
-                  <div className="max-h-48 overflow-y-auto">
+                  <div className="max-h-56 overflow-y-auto">
                     <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                      Credit invoices
+                      Sale invoices ({customerSales.length})
+                      {customerCreditSales.length > 0
+                        ? ` · ${customerCreditSales.length} open credit`
+                        : ""}
                     </p>
                     <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {customerCreditSales.map((sale) => (
+                      {customerSales.map((sale) => (
                         <li key={sale._id} className="px-3 py-2 text-xs">
-                          <div className="flex justify-between gap-2">
-                            <span className="font-mono font-bold text-slate-900 dark:text-white">
-                              {sale.invoiceNumber}
-                            </span>
-                            <span className="font-mono font-bold text-rose-600">
-                              {formatPKR(sale.remainingAmount)}
-                            </span>
+                          <div className="flex justify-between gap-2 items-start">
+                            <div>
+                              <span className="font-mono font-bold text-slate-900 dark:text-white">
+                                {sale.invoiceNumber}
+                              </span>
+                              <p className="text-[10px] text-slate-500 mt-0.5">
+                                {formatDate(sale.saleDate, false, settings.timeZone)} · Bill{" "}
+                                {formatPKR(sale.totalAmount)} · Paid {formatPKR(sale.paidAmount)}
+                                {sale.remainingAmount > 0 && (
+                                  <span className="text-rose-600 font-semibold">
+                                    {" "}
+                                    · Udhaar {formatPKR(sale.remainingAmount)}
+                                  </span>
+                                )}
+                              </p>
+                              <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2">
+                                {sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ")}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedSaleForReturn(sale);
+                                setShowReturnModal(true);
+                              }}
+                              className="shrink-0 inline-flex items-center gap-1 px-2 py-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg font-bold text-[10px]"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              Return
+                            </button>
                           </div>
-                          <p className="text-[10px] text-slate-500 mt-0.5">
-                            {formatDate(sale.saleDate, false, settings.timeZone)} · Bill{" "}
-                            {formatPKR(sale.totalAmount)} · Paid {formatPKR(sale.paidAmount)}
-                          </p>
-                          <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2">
-                            {sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ")}
-                          </p>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="max-h-48 overflow-y-auto">
+                  <div className="max-h-56 overflow-y-auto">
                     <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                      Items total (open credit)
+                      Items total (is customer ne liye)
                     </p>
                     <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {creditItemsTaken.map((item) => (
+                      {itemsTaken.map((item) => (
                         <li
                           key={`${item.sku}-${item.productName}`}
                           className="px-3 py-2 text-xs flex justify-between gap-3"
@@ -806,6 +870,65 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
             className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-bold transition"
           >
             {isSavingCustomer ? "Creating..." : "Create Customer Profile"}
+          </button>
+        </div>
+      </Modal>
+
+      {/* MODAL: Sale Return from Khata */}
+      <Modal
+        isOpen={showReturnModal}
+        onClose={() => {
+          setShowReturnModal(false);
+          setReturnReason("");
+        }}
+        title="Sale Return karein"
+        subtitle={`Invoice #${selectedSaleForReturn?.invoiceNumber} — ${selectedSaleForReturn?.customerName}`}
+        maxWidth="md"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-100 dark:border-rose-900 text-rose-800 dark:text-rose-300">
+            <p className="font-bold flex items-center gap-1.5">
+              <AlertCircle className="w-4 h-4" /> Confirm karne pe yeh hoga
+            </p>
+            <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <Package className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Items stock mein wapas add hongi
+              </li>
+              <li className="flex items-start gap-1.5">
+                <Wallet className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Cash refund (agar liya tha):{" "}
+                <span className="font-bold">{formatPKR(selectedSaleForReturn?.paidAmount || 0)}</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Udhaar Khata se cut:{" "}
+                <span className="font-bold">
+                  {formatPKR(selectedSaleForReturn?.remainingAmount || 0)}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
+              Reason for Return *
+            </label>
+            <textarea
+              rows={3}
+              value={returnReason}
+              onChange={(e) => setReturnReason(e.target.value)}
+              placeholder="e.g. Wrong part / customer return"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
+            />
+          </div>
+
+          <button
+            onClick={handleProcessReturn}
+            disabled={isReturning}
+            className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition disabled:opacity-50"
+          >
+            {isReturning ? "Returning..." : "Confirm Return & Restore Stock"}
           </button>
         </div>
       </Modal>

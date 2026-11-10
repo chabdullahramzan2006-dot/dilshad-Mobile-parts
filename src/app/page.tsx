@@ -948,7 +948,12 @@ export default function ShopApp() {
 
           {/* TAB 5: SALES INVOICES */}
           {activeTab === "sales" && (
-            <SalesView sales={sales} settings={shopSettings} onRefresh={fetchAllData} />
+            <SalesView
+              sales={sales}
+              customers={customers}
+              settings={shopSettings}
+              onRefresh={fetchAllData}
+            />
           )}
 
           {/* TAB 6: CUSTOMER KHATA (DIGITAL LEDGER) */}

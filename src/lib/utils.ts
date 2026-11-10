@@ -48,3 +48,23 @@ export function truncate(text: string, length = 40): string {
   if (!text) return "";
   return text.length > length ? text.slice(0, length) + "..." : text;
 }
+
+/** Digits-only phone for matching (0300... / 300... / +92 300... all compare). */
+export function normalizePhoneDigits(phone: string | undefined | null): string {
+  if (!phone) return "";
+  let digits = String(phone).replace(/\D/g, "");
+  if (digits.startsWith("92") && digits.length >= 12) {
+    digits = digits.slice(2);
+  }
+  if (digits.startsWith("0") && digits.length >= 11) {
+    digits = digits.slice(1);
+  }
+  return digits;
+}
+
+export function phonesMatch(a: string | undefined | null, b: string | undefined | null): boolean {
+  const left = normalizePhoneDigits(a);
+  const right = normalizePhoneDigits(b);
+  if (!left || !right) return false;
+  return left === right || left.includes(right) || right.includes(left);
+}

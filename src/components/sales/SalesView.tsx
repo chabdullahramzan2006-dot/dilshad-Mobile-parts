@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { ISale, IShopSettings } from "@/types";
+import React, { useMemo, useState } from "react";
+import { ICustomer, ISale, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
-import { formatDate } from "@/lib/utils";
+import { formatDate, normalizePhoneDigits, phonesMatch } from "@/lib/utils";
 import {
   Receipt,
   Search,
@@ -20,11 +20,12 @@ import { InvoicePrintModal } from "@/components/sales/InvoicePrintModal";
 
 interface SalesViewProps {
   sales: ISale[];
+  customers?: ICustomer[];
   settings: IShopSettings;
   onRefresh: () => void;
 }
 
-export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
+export function SalesView({ sales, customers = [], settings, onRefresh }: SalesViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
@@ -36,16 +37,51 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
   const [returnReason, setReturnReason] = useState("");
   const [isReturning, setIsReturning] = useState(false);
 
+  const matchedCustomers = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return [];
+    const qLower = q.toLowerCase();
+    const qDigits = normalizePhoneDigits(q);
+    return customers.filter((c) => {
+      if (c.name.toLowerCase().includes(qLower)) return true;
+      if (c.phone.toLowerCase().includes(qLower)) return true;
+      if (qDigits && phonesMatch(c.phone, q)) return true;
+      return false;
+    });
+  }, [customers, searchQuery]);
+
+  const matchedCustomerIds = useMemo(
+    () => new Set(matchedCustomers.map((c) => c._id).filter(Boolean) as string[]),
+    [matchedCustomers]
+  );
+
   const filteredSales = sales.filter((s) => {
     if (filterStatus !== "All" && s.paymentStatus !== filterStatus) return false;
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      s.invoiceNumber.toLowerCase().includes(q) ||
-      s.customerName.toLowerCase().includes(q) ||
-      (s.customerPhone && s.customerPhone.includes(q))
-    );
+    const q = searchQuery.trim();
+    if (!q) return true;
+
+    const qLower = q.toLowerCase();
+    const qDigits = normalizePhoneDigits(q);
+
+    if (s.invoiceNumber.toLowerCase().includes(qLower)) return true;
+    if (s.customerName.toLowerCase().includes(qLower)) return true;
+    if (s.customerPhone && s.customerPhone.toLowerCase().includes(qLower)) return true;
+    if (qDigits && phonesMatch(s.customerPhone, q)) return true;
+    if (s.customerId && matchedCustomerIds.has(s.customerId)) return true;
+
+    // Sale phone missing but customer record phone matches
+    if (s.customerId) {
+      const linked = customers.find((c) => c._id === s.customerId);
+      if (linked && (phonesMatch(linked.phone, q) || linked.phone.toLowerCase().includes(qLower))) {
+        return true;
+      }
+    }
+
+    return false;
   });
+
+  const searchHasCustomerButNoSales =
+    searchQuery.trim().length > 0 && matchedCustomers.length > 0 && filteredSales.length === 0;
 
   const handleProcessReturn = async () => {
     if (!selectedSaleForReturn || !returnReason.trim()) {
@@ -146,8 +182,32 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {filteredSales.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-12 text-slate-400">
-                  No sales invoices found matching your criteria.
+                <td colSpan={8} className="text-center py-12 px-4">
+                  {searchHasCustomerButNoSales ? (
+                    <div className="max-w-lg mx-auto text-left space-y-2">
+                      <p className="text-sm font-bold text-amber-700 dark:text-amber-300">
+                        Customer Khata mein mila, lekin koi Sale Invoice nahi
+                      </p>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        Number <span className="font-mono font-semibold text-slate-700 dark:text-slate-200">{searchQuery.trim()}</span>{" "}
+                        se customer{" "}
+                        <span className="font-semibold text-slate-800 dark:text-slate-100">
+                          {matchedCustomers.map((c) => c.name).join(", ")}
+                        </span>{" "}
+                        Khata mein hai, magar is number pe POS se koi bill save nahi hua.
+                      </p>
+                      <p className="text-xs text-slate-500 leading-relaxed">
+                        <span className="font-semibold">Return tabhi hota hai</span> jab Sales Invoices mein
+                        bill maujood ho. Agar sirf opening balance / manual udhaar hai, to pehle POS se
+                        sale banao — uske baad yahan Return chalega. Khata se balance adjust karna ho to
+                        Customer Khata → Receive Cash / Adjustment use karein.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-slate-400 text-xs">
+                      No sales invoices found matching your criteria.
+                    </p>
+                  )}
                 </td>
               </tr>
             ) : (
