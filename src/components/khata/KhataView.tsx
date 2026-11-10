@@ -77,17 +77,43 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
 
   const selectedCustomer = customers.find((c) => c._id === selectedCustomerId) || null;
 
-  const customerSales = useMemo(() => {
+  const allCustomerSales = useMemo(() => {
     if (!selectedCustomer) return [];
     return sales
       .filter((s) => {
-        if (s.isReturned) return false;
         if (selectedCustomer._id && s.customerId === selectedCustomer._id) return true;
         if (phonesMatch(s.customerPhone, selectedCustomer.phone)) return true;
         return false;
       })
       .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
   }, [sales, selectedCustomer]);
+
+  const customerSales = useMemo(
+    () => allCustomerSales.filter((s) => !s.isReturned),
+    [allCustomerSales]
+  );
+
+  const salesByInvoice = useMemo(() => {
+    const map = new Map<string, (typeof sales)[number]>();
+    for (const sale of allCustomerSales) {
+      map.set(sale.invoiceNumber, sale);
+    }
+    return map;
+  }, [allCustomerSales]);
+
+  const getLedgerProductNames = (entry: ICustomerLedgerEntry) => {
+    if (entry.invoiceNumber) {
+      const sale = salesByInvoice.get(entry.invoiceNumber);
+      if (sale?.items?.length) {
+        return sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ");
+      }
+    }
+    if (entry.type === "PAYMENT") return "Cash / Payment";
+    if (entry.type === "OPENING_BALANCE") return "Opening Balance";
+    if (entry.type === "RETURN") return "Sale Return";
+    if (entry.type === "ADJUSTMENT") return entry.notes || "Adjustment";
+    return "—";
+  };
 
   const customerCreditSales = useMemo(
     () => customerSales.filter((s) => s.remainingAmount > 0),
@@ -265,12 +291,11 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
     const data = ledgerEntries.map((e, idx) => ({
       "#": idx + 1,
       Date: formatDate(e.date, true, settings.timeZone),
-      Type: e.type,
-      Description: e.description,
+      Type: e.type === "PURCHASE" ? "SALE" : e.type,
+      "Product Name": getLedgerProductNames(e),
       "Debit (+ Udhaar)": e.debit,
       "Credit (- Payment)": e.credit,
       "Running Balance": e.balanceAfter,
-      Notes: e.notes || "",
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -577,7 +602,7 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                   <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
                     <th className="py-3 px-3">Date</th>
                     <th className="py-3 px-3">Entry Type</th>
-                    <th className="py-3 px-3">Description / Invoice</th>
+                    <th className="py-3 px-3">Product Name</th>
                     <th className="py-3 px-3 text-right">Debit (+ Udhaar)</th>
                     <th className="py-3 px-3 text-right">Credit (- Paid)</th>
                     <th className="py-3 px-3 text-right">Balance</th>
@@ -597,7 +622,14 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                       </td>
                     </tr>
                   ) : (
-                    ledgerEntries.map((entry) => (
+                    ledgerEntries.map((entry) => {
+                      const linkedSale = entry.invoiceNumber
+                        ? salesByInvoice.get(entry.invoiceNumber)
+                        : undefined;
+                      const canReturn =
+                        entry.type === "PURCHASE" && linkedSale && !linkedSale.isReturned;
+
+                      return (
                       <tr key={entry._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                         <td className="py-3 px-3 font-mono text-slate-500">
                           {formatDate(entry.date, true, settings.timeZone)}
@@ -619,13 +651,10 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                         </td>
                         <td className="py-3 px-3 font-medium text-slate-800 dark:text-slate-200">
                           <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <div>{entry.description}</div>
-                              {entry.notes && (
-                                <span className="text-[10px] text-slate-400">{entry.notes}</span>
-                              )}
+                            <div className="min-w-0">
+                              <div className="leading-relaxed">{getLedgerProductNames(entry)}</div>
                             </div>
-                            {entry.type === "PURCHASE" && entry.invoiceNumber && (
+                            {(entry.type === "PURCHASE" || entry.type === "RETURN") && (
                               <div className="flex gap-1 shrink-0">
                                 <button
                                   type="button"
@@ -635,25 +664,19 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                                 >
                                   <Eye className="w-3.5 h-3.5" />
                                 </button>
-                                {(() => {
-                                  const sale = customerSales.find(
-                                    (s) => s.invoiceNumber === entry.invoiceNumber
-                                  );
-                                  if (!sale) return null;
-                                  return (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setSelectedSaleForReturn(sale);
-                                        setShowReturnModal(true);
-                                      }}
-                                      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded text-[10px] font-bold"
-                                    >
-                                      <RotateCcw className="w-3 h-3" />
-                                      Return
-                                    </button>
-                                  );
-                                })()}
+                                {canReturn && linkedSale && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedSaleForReturn(linkedSale);
+                                      setShowReturnModal(true);
+                                    }}
+                                    className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded text-[10px] font-bold"
+                                  >
+                                    <RotateCcw className="w-3 h-3" />
+                                    Return
+                                  </button>
+                                )}
                               </div>
                             )}
                           </div>
@@ -668,7 +691,8 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                           {formatPKR(entry.balanceAfter)}
                         </td>
                       </tr>
-                    ))
+                      );
+                    })
                   )}
                 </tbody>
               </table>
