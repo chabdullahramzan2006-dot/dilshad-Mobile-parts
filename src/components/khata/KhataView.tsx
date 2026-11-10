@@ -23,9 +23,11 @@ import {
   AlertCircle,
   Wallet,
   Eye,
+  Printer,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/Modal";
+import { InvoicePrintModal } from "@/components/sales/InvoicePrintModal";
 import * as XLSX from "xlsx";
 
 interface KhataViewProps {
@@ -67,6 +69,8 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
   const [returnReason, setReturnReason] = useState("");
   const [isReturning, setIsReturning] = useState(false);
   const [showCustomerDetailModal, setShowCustomerDetailModal] = useState(false);
+  const [selectedSaleForPrint, setSelectedSaleForPrint] = useState<ISale | null>(null);
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   // Filtered customer list
   const filteredCustomers = customers.filter(
@@ -1011,17 +1015,31 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                         )}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedSaleForReturn(sale);
-                        setShowReturnModal(true);
-                      }}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg font-bold"
-                    >
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      Return
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSaleForPrint(sale);
+                          setShowPrintModal(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 border border-sky-200 dark:border-sky-900 rounded-lg font-bold"
+                        title="Print / WhatsApp Share"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        Print
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSaleForReturn(sale);
+                          setShowReturnModal(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg font-bold"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        Return
+                      </button>
+                    </div>
                   </div>
                   <div className="px-3 py-2">
                     {sale.items.length === 0 ? (
@@ -1077,6 +1095,16 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
           )}
         </div>
       </Modal>
+
+      <InvoicePrintModal
+        isOpen={showPrintModal}
+        onClose={() => {
+          setShowPrintModal(false);
+          setSelectedSaleForPrint(null);
+        }}
+        sale={selectedSaleForPrint}
+        settings={settings}
+      />
 
       {/* MODAL: Sale Return from Khata */}
       <Modal

@@ -264,12 +264,15 @@ export function SalesView({ sales, customers = [], settings, onRefresh }: SalesV
                   <td className="py-3 px-3 text-right">
                     <div className="flex justify-end gap-1.5 items-center">
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           setSelectedSaleForView(sale);
                           setShowPrintModal(true);
                         }}
                         className="p-1.5 text-slate-500 hover:text-sky-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-                        title="Print / View Invoice"
+                        title="Print / WhatsApp Share"
                       >
                         <Printer className="w-3.5 h-3.5" />
                       </button>
@@ -298,7 +301,10 @@ export function SalesView({ sales, customers = [], settings, onRefresh }: SalesV
       {/* Invoice Print Modal */}
       <InvoicePrintModal
         isOpen={showPrintModal}
-        onClose={() => setShowPrintModal(false)}
+        onClose={() => {
+          setShowPrintModal(false);
+          setSelectedSaleForView(null);
+        }}
         sale={selectedSaleForView}
         settings={settings}
       />
