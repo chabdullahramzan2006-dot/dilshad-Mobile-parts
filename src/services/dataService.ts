@@ -29,6 +29,7 @@ import {
   CustomerLedgerEntry,
   Payment,
   Product,
+  Sale,
   Supplier,
 } from "@/models";
 import { preciseAdd, preciseSubtract, preciseMultiply } from "@/lib/currency";
@@ -397,6 +398,14 @@ type MongoPaymentRecord = Omit<IPayment, "_id" | "createdAt"> & {
   createdAt?: Date | string;
 };
 
+type MongoSaleRecord = Omit<ISale, "_id" | "createdAt" | "saleDate" | "dueDate"> & {
+  saleId?: string;
+  _id?: { toString(): string };
+  saleDate?: Date | string;
+  dueDate?: Date | string;
+  createdAt?: Date | string;
+};
+
 function mongoCustomerToRecord(customer: MongoCustomerRecord): ICustomer {
   const { _id, customerId, createdAt, updatedAt, ...fields } = customer;
   return {
@@ -425,6 +434,141 @@ function mongoPaymentToRecord(payment: MongoPaymentRecord): IPayment {
     date: new Date(payment.date).toISOString(),
     createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
   };
+}
+
+function mongoSaleToRecord(sale: MongoSaleRecord): ISale {
+  const { _id, saleId, createdAt, saleDate, dueDate, ...fields } = sale;
+  return {
+    ...fields,
+    _id: saleId || String(_id),
+    saleDate: saleDate ? new Date(saleDate).toISOString() : new Date().toISOString(),
+    dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
+    createdAt: createdAt ? new Date(createdAt).toISOString() : new Date().toISOString(),
+  };
+}
+
+async function persistMongoSales(sales: ISale[]) {
+  if (!(await connectDB()) || sales.length === 0) return;
+
+  await Sale.bulkWrite(
+    sales.map((sale) => {
+      const { _id, createdAt, saleDate, dueDate, ...fields } = sale;
+      return {
+        updateOne: {
+          filter: { $or: [{ saleId: _id }, { invoiceNumber: sale.invoiceNumber }] },
+          update: {
+            $set: {
+              ...fields,
+              saleId: _id,
+              saleDate: saleDate ? new Date(saleDate) : new Date(),
+              dueDate: dueDate ? new Date(dueDate) : undefined,
+              updatedAt: new Date(),
+            },
+            $setOnInsert: {
+              createdAt: createdAt ? new Date(createdAt) : new Date(),
+            },
+          },
+          upsert: true,
+          timestamps: false,
+        },
+      };
+    })
+  );
+}
+
+function parseBillNotes(notes?: string): { totalAmount: number; paidAmount: number } {
+  const totalMatch = notes?.match(/Total bill:\s*Rs\.?\s*([\d.]+)/i);
+  const paidMatch = notes?.match(/Cash paid:\s*Rs\.?\s*([\d.]+)/i);
+  return {
+    totalAmount: totalMatch ? Number(totalMatch[1]) || 0 : 0,
+    paidAmount: paidMatch ? Number(paidMatch[1]) || 0 : 0,
+  };
+}
+
+/** Rebuild missing sale rows from Khata ledger so invoices appear in Sales + popup. */
+function ensureSalesFromLedger(db: DatabaseSchema) {
+  const existing = new Set(db.sales.map((s) => s.invoiceNumber));
+  const customersById = new Map(db.customers.map((c) => [c._id, c]));
+
+  for (const entry of db.ledgerEntries) {
+    if (entry.type !== "PURCHASE" || !entry.invoiceNumber) continue;
+    if (existing.has(entry.invoiceNumber)) continue;
+
+    const customer = entry.customerId ? customersById.get(entry.customerId) : undefined;
+    const parsed = parseBillNotes(entry.notes);
+    const totalAmount = parsed.totalAmount || entry.debit || 0;
+    const paidAmount = parsed.paidAmount || 0;
+    const remainingAmount = Math.max(0, preciseSubtract(totalAmount, paidAmount));
+    const paymentStatus: ISale["paymentStatus"] =
+      remainingAmount <= 0 ? "Paid" : paidAmount > 0 ? "Partially Paid" : "Unpaid";
+
+    db.sales.push({
+      _id: generateId(),
+      invoiceNumber: entry.invoiceNumber,
+      customerId: entry.customerId,
+      customerName: customer?.name || "Credit Customer",
+      customerPhone: customer?.phone,
+      items: [],
+      subtotal: totalAmount,
+      discount: 0,
+      totalAmount,
+      paidAmount,
+      remainingAmount: remainingAmount || entry.debit || 0,
+      paymentMethod: remainingAmount > 0 ? "Credit / Udhaar" : "Cash",
+      paymentStatus,
+      saleDate: entry.date,
+      notes: "Recovered from Khata ledger (item details unavailable in old record)",
+      customFields: { recoveredFromLedger: true },
+      isReturned: false,
+      createdAt: entry.createdAt || entry.date,
+    });
+    existing.add(entry.invoiceNumber);
+  }
+}
+
+async function syncMongoSalesToLocal() {
+  const db = ensureDB();
+  const mongo = await connectDB();
+
+  // Even without Mongo, rebuild any sales missing from ledger invoice refs
+  if (!mongo) {
+    ensureSalesFromLedger(db);
+    saveDB();
+    return null;
+  }
+
+  // Push any local-only sales up first so Vercel/local stay in sync
+  if (db.sales.length) {
+    await persistMongoSales(db.sales);
+  }
+
+  const mongoSales = (await Sale.find({}).lean()) as MongoSaleRecord[];
+  const byInvoice = new Map<string, ISale>();
+  for (const sale of db.sales) {
+    byInvoice.set(sale.invoiceNumber, sale);
+  }
+  for (const record of mongoSales) {
+    const mapped = mongoSaleToRecord(record);
+    // Prefer records that still have line items over empty ledger stubs
+    const prev = byInvoice.get(mapped.invoiceNumber);
+    if (!prev || (mapped.items?.length && !prev.items?.length)) {
+      byInvoice.set(mapped.invoiceNumber, mapped);
+    } else if (!mapped.items?.length && prev.items?.length) {
+      byInvoice.set(mapped.invoiceNumber, prev);
+    } else {
+      byInvoice.set(mapped.invoiceNumber, mapped);
+    }
+  }
+  db.sales = Array.from(byInvoice.values());
+  ensureSalesFromLedger(db);
+  db.sales.sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
+
+  // Persist recovered stubs so they show on Sales Invoices across deploys
+  if (db.sales.length) {
+    await persistMongoSales(db.sales);
+  }
+  saveDB();
+  return mongo;
 }
 
 async function persistMongoCustomerData(
@@ -1165,6 +1309,9 @@ export async function getSales(options?: {
   search?: string;
   paymentStatus?: string;
 }): Promise<ISale[]> {
+  // Customers/ledger first so missing invoices can be rebuilt from Khata
+  await syncMongoCustomersToLocal();
+  await syncMongoSalesToLocal();
   const db = ensureDB();
   let list = [...db.sales];
 
@@ -1214,6 +1361,7 @@ export async function getSales(options?: {
 }
 
 export async function getSaleById(id: string): Promise<ISale | null> {
+  await syncMongoSalesToLocal();
   const db = ensureDB();
   return db.sales.find((s) => s._id === id || s.invoiceNumber === id) || null;
 }
@@ -1428,6 +1576,7 @@ export async function createSale(saleData: {
 
   saveDB();
   await persistMongoProducts(db.products);
+  await persistMongoSales([newSale]);
   if (customer) {
     await persistMongoCustomerData(
       [customer],
@@ -1445,6 +1594,7 @@ export async function returnSale(
 ): Promise<{ success: boolean; error?: string }> {
   await syncMongoCatalogToLocal();
   await syncMongoCustomersToLocal();
+  await syncMongoSalesToLocal();
   const db = ensureDB();
   const sale = db.sales.find((s) => s._id === saleId || s.invoiceNumber === saleId);
   if (!sale) return { success: false, error: "Sale invoice not found." };
@@ -1519,6 +1669,7 @@ export async function returnSale(
 
   saveDB();
   await persistMongoProducts(db.products);
+  await persistMongoSales([sale]);
   if (updatedCustomer) {
     await persistMongoCustomerData(
       [updatedCustomer],

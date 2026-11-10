@@ -141,10 +141,11 @@ const SaleItemSchema = new Schema({
 
 const SaleSchema = new Schema(
   {
+    saleId: { type: String, index: true },
     invoiceNumber: { type: String, required: true, unique: true, index: true },
-    customerId: { type: String },
+    customerId: { type: String, index: true },
     customerName: { type: String, required: true, default: "Walk-in Customer" },
-    customerPhone: { type: String },
+    customerPhone: { type: String, index: true },
     items: [SaleItemSchema],
     subtotal: { type: Number, required: true },
     discount: { type: Number, default: 0 },

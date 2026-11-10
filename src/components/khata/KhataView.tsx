@@ -22,6 +22,7 @@ import {
   RotateCcw,
   AlertCircle,
   Wallet,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/Modal";
@@ -65,6 +66,7 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [returnReason, setReturnReason] = useState("");
   const [isReturning, setIsReturning] = useState(false);
+  const [showCustomerDetailModal, setShowCustomerDetailModal] = useState(false);
 
   // Filtered customer list
   const filteredCustomers = customers.filter(
@@ -171,6 +173,11 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
       setReturnReason("");
       setSelectedSaleForReturn(null);
       await onRefresh();
+      if (selectedCustomerId) {
+        const ledgerRes = await fetch(`/api/customers/${selectedCustomerId}/ledger`);
+        const ledgerData = await ledgerRes.json();
+        if (ledgerRes.ok) setLedgerEntries(ledgerData.ledger || []);
+      }
     } catch (err: any) {
       toast.error(err.message || "Failed to process return");
     } finally {
@@ -313,7 +320,10 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
               return (
                 <button
                   key={cust._id}
-                  onClick={() => setSelectedCustomerId(cust._id)}
+                  onClick={() => {
+                    setSelectedCustomerId(cust._id);
+                    setShowCustomerDetailModal(true);
+                  }}
                   className={`w-full text-left p-3 rounded-xl border transition-all text-xs flex flex-col gap-1 ${
                     isSelected
                       ? "border-sky-500 bg-sky-50/50 dark:bg-sky-950/30 ring-1 ring-sky-500 shadow-xs"
@@ -604,14 +614,49 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
                                 : "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300"
                             }`}
                           >
-                            {entry.type}
+                            {entry.type === "PURCHASE" ? "SALE" : entry.type}
                           </span>
                         </td>
                         <td className="py-3 px-3 font-medium text-slate-800 dark:text-slate-200">
-                          <div>{entry.description}</div>
-                          {entry.notes && (
-                            <span className="text-[10px] text-slate-400">{entry.notes}</span>
-                          )}
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div>{entry.description}</div>
+                              {entry.notes && (
+                                <span className="text-[10px] text-slate-400">{entry.notes}</span>
+                              )}
+                            </div>
+                            {entry.type === "PURCHASE" && entry.invoiceNumber && (
+                              <div className="flex gap-1 shrink-0">
+                                <button
+                                  type="button"
+                                  onClick={() => setShowCustomerDetailModal(true)}
+                                  className="p-1 text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/40 rounded"
+                                  title="Items dekhein"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                </button>
+                                {(() => {
+                                  const sale = customerSales.find(
+                                    (s) => s.invoiceNumber === entry.invoiceNumber
+                                  );
+                                  if (!sale) return null;
+                                  return (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setSelectedSaleForReturn(sale);
+                                        setShowReturnModal(true);
+                                      }}
+                                      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded text-[10px] font-bold"
+                                    >
+                                      <RotateCcw className="w-3 h-3" />
+                                      Return
+                                    </button>
+                                  );
+                                })()}
+                              </div>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 px-3 text-right font-mono font-semibold text-rose-600 dark:text-rose-400">
                           {entry.debit > 0 ? formatPKR(entry.debit) : "-"}
@@ -871,6 +916,141 @@ export function KhataView({ customers, sales = [], settings, onRefresh }: KhataV
           >
             {isSavingCustomer ? "Creating..." : "Create Customer Profile"}
           </button>
+        </div>
+      </Modal>
+
+      {/* MODAL: Customer items taken popup */}
+      <Modal
+        isOpen={showCustomerDetailModal}
+        onClose={() => setShowCustomerDetailModal(false)}
+        title={selectedCustomer ? `${selectedCustomer.name} — kya liya` : "Customer detail"}
+        subtitle={
+          selectedCustomer
+            ? `${selectedCustomer.phone} · Balance ${formatPKR(selectedCustomer.outstandingBalance)}`
+            : undefined
+        }
+        maxWidth="2xl"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40">
+              <p className="text-[10px] uppercase text-amber-700/80 font-semibold">Total Udhaar Liya</p>
+              <p className="font-mono font-bold text-amber-800 dark:text-amber-300 mt-0.5">
+                {formatPKR(ledgerTotals.totalUdhaarTaken)}
+              </p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <p className="text-[10px] uppercase text-slate-400 font-semibold">Purchases</p>
+              <p className="font-mono font-bold text-slate-900 dark:text-white mt-0.5">
+                {formatPKR(selectedCustomer?.totalPurchases || 0)}
+              </p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <p className="text-[10px] uppercase text-slate-400 font-semibold">Paid</p>
+              <p className="font-mono font-bold text-emerald-600 mt-0.5">
+                {formatPKR(selectedCustomer?.totalPayments || 0)}
+              </p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+              <p className="text-[10px] uppercase text-slate-400 font-semibold">Sale bills</p>
+              <p className="font-mono font-bold text-slate-900 dark:text-white mt-0.5">
+                {customerSales.length}
+              </p>
+            </div>
+          </div>
+
+          {customerSales.length === 0 ? (
+            <p className="text-slate-500 leading-relaxed py-4">
+              Is customer ki Sale Invoice abhi sync nahi hui ya sirf opening balance hai. Sales
+              Invoices tab refresh karein — purani Khata invoices wahan bhi aa jayengi.
+            </p>
+          ) : (
+            <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+              {customerSales.map((sale) => (
+                <div
+                  key={sale._id}
+                  className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+                >
+                  <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800/60 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-mono font-bold text-slate-900 dark:text-white">
+                        {sale.invoiceNumber}
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        {formatDate(sale.saleDate, true, settings.timeZone)} · Bill{" "}
+                        {formatPKR(sale.totalAmount)} · Paid {formatPKR(sale.paidAmount)}
+                        {sale.remainingAmount > 0 && (
+                          <span className="text-rose-600 font-semibold">
+                            {" "}
+                            · Udhaar {formatPKR(sale.remainingAmount)}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedSaleForReturn(sale);
+                        setShowReturnModal(true);
+                      }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg font-bold"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Return
+                    </button>
+                  </div>
+                  <div className="px-3 py-2">
+                    {sale.items.length === 0 ? (
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                        Item list purani record se recover nahi hui — bill amount Khata se sync hua.
+                        Nayi sales mein items yahan dikhengi.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {sale.items.map((item, idx) => (
+                          <li
+                            key={`${sale._id}-${item.productId}-${idx}`}
+                            className="py-1.5 flex justify-between gap-3"
+                          >
+                            <span className="text-slate-800 dark:text-slate-200">
+                              {item.productName}{" "}
+                              <span className="font-mono text-slate-400">×{item.quantity}</span>
+                            </span>
+                            <span className="font-mono font-semibold shrink-0">
+                              {formatPKR(item.total)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {itemsTaken.length > 0 && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+              <p className="font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-amber-600" />
+                Total items (saari sales)
+              </p>
+              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+                {itemsTaken.map((item) => (
+                  <li
+                    key={`${item.sku}-${item.productName}`}
+                    className="flex justify-between gap-2 py-1 border-b border-slate-100 dark:border-slate-800"
+                  >
+                    <span>
+                      {item.productName}{" "}
+                      <span className="font-mono text-slate-400">×{item.quantity}</span>
+                    </span>
+                    <span className="font-mono font-semibold">{formatPKR(item.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </Modal>
 

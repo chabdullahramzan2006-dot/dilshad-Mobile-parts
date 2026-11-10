@@ -233,7 +233,11 @@ export function SalesView({ sales, customers = [], settings, onRefresh }: SalesV
                     )}
                   </td>
                   <td className="py-3 px-3 text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
-                    {sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ")}
+                    {sale.items.length > 0
+                      ? sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ")
+                      : sale.customFields?.recoveredFromLedger
+                      ? "Items N/A (Khata se recover)"
+                      : "-"}
                   </td>
                   <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                     {formatPKR(sale.totalAmount)}

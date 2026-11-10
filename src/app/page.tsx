@@ -223,7 +223,7 @@ export default function ShopApp() {
           fetch("/api/customers", { cache: "no-store" }),
           fetch("/api/suppliers"),
           fetch("/api/purchases"),
-          fetch("/api/sales"),
+          fetch("/api/sales", { cache: "no-store" }),
           fetch("/api/expenses"),
           fetch("/api/categories"),
           fetch("/api/brands"),
