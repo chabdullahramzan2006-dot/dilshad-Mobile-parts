@@ -4,7 +4,7 @@
       "_id": "id_mvrsimnw_rsz1x",
       "name": "Dilshad Khan",
       "email": "dilshad@gmail.com",
-      "passwordHash": "$2b$10$3mlSUIErZgxNzcmLAo97pujxsmITxmd1FTPB3JO4ODEmg.gk748na",
+      "passwordHash": "$2b$10$djnXGzKmwskj97NKS8e8pOr9XhwPrjQeS41Gc1LCkh5pBA7ADZJne",
       "role": "admin",
       "mustChangePassword": false,
       "securityQuestion": "What is your shop name?",
@@ -459,6 +459,20 @@
       "customFields": {},
       "createdAt": "2026-10-28T07:26:33.393Z",
       "updatedAt": "2026-10-28T07:26:33.393Z"
+    },
+    {
+      "_id": "id_mwaixnq3_0br7z",
+      "name": "Nihil eu ad inventor",
+      "phone": "Ullamco sunt ut nost",
+      "address": "At non nostrud nostr",
+      "openingBalance": 31,
+      "totalPurchases": 0,
+      "totalPayments": 0,
+      "outstandingBalance": 31,
+      "status": "Active",
+      "customFields": {},
+      "createdAt": "2026-11-10T10:05:10.107Z",
+      "updatedAt": "2026-11-10T10:05:10.107Z"
     }
   ],
   "ledgerEntries": [
@@ -473,6 +487,18 @@
       "credit": 0,
       "balanceAfter": 32,
       "createdAt": "2026-10-28T07:26:33.393Z"
+    },
+    {
+      "_id": "id_mwaixnq3_wogs3",
+      "customerId": "id_mwaixnq3_0br7z",
+      "date": "2026-11-10T10:05:10.107Z",
+      "type": "OPENING_BALANCE",
+      "referenceType": "MANUAL",
+      "description": "Opening Balance Carried Forward",
+      "debit": 31,
+      "credit": 0,
+      "balanceAfter": 31,
+      "createdAt": "2026-11-10T10:05:10.107Z"
     }
   ],
   "payments": [],
@@ -718,6 +744,26 @@
     "theme": "sky"
   },
   "auditLogs": [
+    {
+      "_id": "id_mwaixrlm_jzvix",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "CUSTOMER_CREATED",
+      "entityType": "Customer",
+      "entityId": "id_mwaixnq3_0br7z",
+      "details": "Created customer: Nihil eu ad inventor (Ullamco sunt ut nost)",
+      "createdAt": "2026-11-10T10:05:15.130Z"
+    },
+    {
+      "_id": "id_mwaitad8_e3ly9",
+      "adminEmail": "dilshad@gmail.com",
+      "action": "LOGIN_SUCCESS",
+      "entityType": "Admin",
+      "entityId": "id_mvrsimnw_rsz1x",
+      "details": "Successful admin login",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+      "createdAt": "2026-11-10T10:01:46.172Z"
+    },
     {
       "_id": "id_mvvzpbon_285l1",
       "adminEmail": "dilshad@gmail.com",

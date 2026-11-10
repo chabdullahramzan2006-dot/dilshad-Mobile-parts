@@ -1457,32 +1457,41 @@ export async function returnSale(
     }
   }
 
-  // 2. Reverse customer Khata ledger if credit was assigned
+  // 2. Reverse customer totals + Khata ledger when linked customer exists
   const ledgerStart = db.ledgerEntries.length;
   let updatedCustomer: ICustomer | undefined;
-  if (sale.customerId && sale.remainingAmount > 0) {
+  if (sale.customerId) {
     const customer = db.customers.find((c) => c._id === sale.customerId);
     if (customer) {
       updatedCustomer = customer;
-      customer.outstandingBalance = Math.max(0, preciseSubtract(customer.outstandingBalance, sale.remainingAmount));
-      if (customer.outstandingBalance === 0) {
-        customer.status = "Settled";
-      }
+      customer.totalPurchases = Math.max(0, preciseSubtract(customer.totalPurchases, sale.totalAmount));
+      customer.totalPayments = Math.max(0, preciseSubtract(customer.totalPayments, sale.paidAmount));
+      customer.updatedAt = new Date().toISOString();
 
-      db.ledgerEntries.push({
-        _id: generateId(),
-        customerId: customer._id,
-        date: new Date().toISOString(),
-        type: "RETURN",
-        referenceType: "RETURN",
-        invoiceNumber: sale.invoiceNumber,
-        description: `Sale Return & Ledger Credit - Inv #${sale.invoiceNumber}`,
-        debit: 0,
-        credit: sale.remainingAmount,
-        balanceAfter: customer.outstandingBalance,
-        notes: returnReason,
-        createdAt: new Date().toISOString(),
-      });
+      if (sale.remainingAmount > 0) {
+        customer.outstandingBalance = Math.max(
+          0,
+          preciseSubtract(customer.outstandingBalance, sale.remainingAmount)
+        );
+        if (customer.outstandingBalance === 0) {
+          customer.status = "Settled";
+        }
+
+        db.ledgerEntries.push({
+          _id: generateId(),
+          customerId: customer._id,
+          date: new Date().toISOString(),
+          type: "RETURN",
+          referenceType: "RETURN",
+          invoiceNumber: sale.invoiceNumber,
+          description: `Sale Return & Ledger Credit - Inv #${sale.invoiceNumber}`,
+          debit: 0,
+          credit: sale.remainingAmount,
+          balanceAfter: customer.outstandingBalance,
+          notes: returnReason,
+          createdAt: new Date().toISOString(),
+        });
+      }
     }
   }
 

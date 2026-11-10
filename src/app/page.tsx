@@ -30,6 +30,8 @@ import {
   Boxes,
   Users,
   Download,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Toaster, toast } from "sonner";
 import {
@@ -151,6 +153,7 @@ export default function ShopApp() {
   // Login Form State
   const [loginEmail, setLoginEmail] = useState("dilshad@gmail.com");
   const [loginPassword, setLoginPassword] = useState("");
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
@@ -404,13 +407,23 @@ export default function ShopApp() {
 
             <div>
               <label className="text-xs font-semibold text-slate-300 block mb-1">Password</label>
-              <input
-                type="password"
-                value={loginPassword}
-                onChange={(e) => setLoginPassword(e.target.value)}
-                required
-                className="w-full px-4 py-2.5 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-sky-500"
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2.5 pr-11 bg-slate-900/80 border border-slate-700 rounded-xl text-sm text-white focus:outline-hidden focus:ring-2 focus:ring-sky-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                  aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                >
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <button
@@ -940,7 +953,12 @@ export default function ShopApp() {
 
           {/* TAB 6: CUSTOMER KHATA (DIGITAL LEDGER) */}
           {activeTab === "khata" && (
-            <KhataView customers={customers} settings={shopSettings} onRefresh={fetchAllData} />
+            <KhataView
+              customers={customers}
+              sales={sales}
+              settings={shopSettings}
+              onRefresh={fetchAllData}
+            />
           )}
 
           {/* TAB 7: PENDING PAYMENTS (CREDIT RECOVERY) */}

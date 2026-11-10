@@ -9,10 +9,10 @@ import {
   Search,
   Printer,
   RotateCcw,
-  CheckCircle,
-  Clock,
   AlertCircle,
-  Eye,
+  Package,
+  Wallet,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/Modal";
@@ -64,9 +64,10 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      toast.success("Return processed successfully! Stock restored.");
+      toast.success("Sale return done! Stock restored and Khata updated.");
       setShowReturnModal(false);
       setReturnReason("");
+      setSelectedSaleForReturn(null);
       onRefresh();
     } catch (err: any) {
       toast.error(err.message || "Failed to process return");
@@ -84,9 +85,21 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
             <Receipt className="w-5 h-5 text-sky-600" /> Sales Invoices & History
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Search previous bills, reprint receipts, or process stock returns & refunds
+            Search bills, reprint receipts, or process sale returns
           </p>
         </div>
+      </div>
+
+      {/* How to return guide */}
+      <div className="mt-4 p-3.5 rounded-xl border border-sky-100 bg-sky-50/80 dark:bg-sky-950/20 dark:border-sky-900 text-xs text-sky-900 dark:text-sky-200">
+        <p className="font-bold flex items-center gap-1.5 mb-1">
+          <RotateCcw className="w-3.5 h-3.5" /> Sale Return kaise karein
+        </p>
+        <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-sky-800/90 dark:text-sky-300/90 leading-relaxed">
+          <li>Invoice number ya customer name/phone se bill search karein</li>
+          <li>Row pe <span className="font-bold">Return</span> button dabayein</li>
+          <li>Return reason likhein aur confirm karein — stock wapas, cash refund dikhega, udhaar khata se cut hoga</li>
+        </ol>
       </div>
 
       {/* Filter Toolbar */}
@@ -145,6 +158,11 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
                       {sale.invoiceNumber}
                     </div>
                     <div className="text-[10px] text-slate-400">{formatDate(sale.saleDate, true, settings.timeZone)}</div>
+                    {sale.isReturned && sale.returnReason && (
+                      <div className="text-[10px] text-purple-600 mt-0.5 line-clamp-1">
+                        Return: {sale.returnReason}
+                      </div>
+                    )}
                   </td>
                   <td className="py-3 px-3">
                     <div className="font-semibold text-slate-800 dark:text-slate-200">
@@ -180,7 +198,7 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
                     </span>
                   </td>
                   <td className="py-3 px-3 text-right">
-                    <div className="flex justify-end gap-1.5">
+                    <div className="flex justify-end gap-1.5 items-center">
                       <button
                         onClick={() => {
                           setSelectedSaleForView(sale);
@@ -197,10 +215,11 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
                             setSelectedSaleForReturn(sale);
                             setShowReturnModal(true);
                           }}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition"
-                          title="Process Return & Refund"
+                          className="inline-flex items-center gap-1 px-2 py-1 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg transition font-bold text-[10px]"
+                          title="Process Sale Return"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
+                          Return
                         </button>
                       )}
                     </div>
@@ -223,31 +242,71 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
       {/* MODAL: Return & Refund */}
       <Modal
         isOpen={showReturnModal}
-        onClose={() => setShowReturnModal(false)}
-        title="Process Return & Refund"
-        subtitle={`Invoice #${selectedSaleForReturn?.invoiceNumber} - ${selectedSaleForReturn?.customerName}`}
+        onClose={() => {
+          setShowReturnModal(false);
+          setReturnReason("");
+        }}
+        title="Sale Return karein"
+        subtitle={`Invoice #${selectedSaleForReturn?.invoiceNumber} — ${selectedSaleForReturn?.customerName}`}
         maxWidth="md"
       >
         <div className="space-y-4 text-xs">
           <div className="p-3 bg-rose-50 dark:bg-rose-950/30 rounded-xl border border-rose-100 dark:border-rose-900 text-rose-800 dark:text-rose-300">
             <p className="font-bold flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4" /> Stock Restoration Action
+              <AlertCircle className="w-4 h-4" /> Confirm karne pe yeh hoga
             </p>
-            <p className="mt-1 text-[11px] leading-relaxed">
-              Processing this return will automatically return all {selectedSaleForReturn?.items.length} items to
-              available stock and reverse any Khata credit assigned to {selectedSaleForReturn?.customerName}.
-            </p>
+            <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <Package className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Saari items stock mein wapas add hongi
+              </li>
+              <li className="flex items-start gap-1.5">
+                <Wallet className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Agar cash liya tha — customer ko refund dena hai:{" "}
+                <span className="font-bold">{formatPKR(selectedSaleForReturn?.paidAmount || 0)}</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                Agar udhaar tha — Khata se cut:{" "}
+                <span className="font-bold">{formatPKR(selectedSaleForReturn?.remainingAmount || 0)}</span>
+              </li>
+            </ul>
           </div>
+
+          {selectedSaleForReturn && (
+            <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+              <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 font-semibold text-slate-600 dark:text-slate-300">
+                Return hone wali items
+              </div>
+              <ul className="divide-y divide-slate-100 dark:divide-slate-800 max-h-40 overflow-y-auto">
+                {selectedSaleForReturn.items.map((item, idx) => (
+                  <li key={`${item.productId}-${idx}`} className="px-3 py-2 flex justify-between gap-3">
+                    <span className="text-slate-800 dark:text-slate-200">
+                      {item.productName}{" "}
+                      <span className="text-slate-400 font-mono">×{item.quantity}</span>
+                    </span>
+                    <span className="font-mono font-semibold text-slate-900 dark:text-white">
+                      {formatPKR(item.total)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="px-3 py-2 bg-slate-50 dark:bg-slate-800 flex justify-between font-bold">
+                <span>Bill Total</span>
+                <span className="font-mono">{formatPKR(selectedSaleForReturn.totalAmount)}</span>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">
-              Reason for Return *
+              Reason for Return / واپسی کی وجہ *
             </label>
             <textarea
               rows={3}
               value={returnReason}
               onChange={(e) => setReturnReason(e.target.value)}
-              placeholder="e.g. Technician tested display, flex connector mismatch with customer motherboard"
+              placeholder="e.g. Display flex mismatch / customer ne change mangaya"
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs"
             />
           </div>
@@ -257,7 +316,7 @@ export function SalesView({ sales, settings, onRefresh }: SalesViewProps) {
             disabled={isReturning}
             className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-xs disabled:opacity-50"
           >
-            {isReturning ? "Restoring Stock..." : "Confirm Return & Restore Inventory"}
+            {isReturning ? "Returning..." : "Confirm Return & Restore Stock"}
           </button>
         </div>
       </Modal>

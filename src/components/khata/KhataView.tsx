@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { ICustomer, ICustomerLedgerEntry, IShopSettings } from "@/types";
+import React, { useState, useEffect, useMemo } from "react";
+import { ICustomer, ICustomerLedgerEntry, ISale, IShopSettings } from "@/types";
 import { formatPKR } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import {
@@ -18,6 +18,7 @@ import {
   Phone,
   MapPin,
   Sliders,
+  Package,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Modal } from "@/components/ui/Modal";
@@ -25,11 +26,12 @@ import * as XLSX from "xlsx";
 
 interface KhataViewProps {
   customers: ICustomer[];
+  sales?: ISale[];
   settings: IShopSettings;
   onRefresh: () => Promise<void>;
 }
 
-export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
+export function KhataView({ customers, sales = [], settings, onRefresh }: KhataViewProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
     customers.length > 0 ? customers[0]._id : null
@@ -64,6 +66,51 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
   );
 
   const selectedCustomer = customers.find((c) => c._id === selectedCustomerId) || null;
+
+  const customerCreditSales = useMemo(() => {
+    if (!selectedCustomerId) return [];
+    return sales
+      .filter(
+        (s) =>
+          s.customerId === selectedCustomerId &&
+          !s.isReturned &&
+          s.remainingAmount > 0
+      )
+      .sort((a, b) => new Date(b.saleDate).getTime() - new Date(a.saleDate).getTime());
+  }, [sales, selectedCustomerId]);
+
+  const creditItemsTaken = useMemo(() => {
+    const map = new Map<
+      string,
+      { productName: string; sku: string; quantity: number; amount: number }
+    >();
+    for (const sale of customerCreditSales) {
+      for (const item of sale.items) {
+        const key = item.productId || item.sku || item.productName;
+        const existing = map.get(key);
+        if (existing) {
+          existing.quantity += item.quantity;
+          existing.amount += item.total;
+        } else {
+          map.set(key, {
+            productName: item.productName,
+            sku: item.sku,
+            quantity: item.quantity,
+            amount: item.total,
+          });
+        }
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.amount - a.amount);
+  }, [customerCreditSales]);
+
+  const ledgerTotals = useMemo(() => {
+    const totalUdhaarTaken = ledgerEntries.reduce((sum, e) => sum + (e.debit || 0), 0);
+    const totalReturns = ledgerEntries
+      .filter((e) => e.type === "RETURN")
+      .reduce((sum, e) => sum + (e.credit || 0), 0);
+    return { totalUdhaarTaken, totalReturns };
+  }, [ledgerEntries]);
 
   // Fetch Ledger for selected customer
   useEffect(() => {
@@ -335,7 +382,16 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
             </div>
 
             {/* Quick Metrics */}
-            <div className="grid grid-cols-3 gap-4 my-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/20 rounded-xl border border-amber-100 dark:border-amber-900/40">
+                <span className="text-[10px] text-amber-700/80 dark:text-amber-300/80 uppercase font-semibold">
+                  Total Udhaar Liya
+                </span>
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300 font-mono mt-0.5">
+                  {formatPKR(ledgerTotals.totalUdhaarTaken)}
+                </p>
+                <p className="text-[10px] text-amber-600/80 mt-0.5">Lifetime debit / credit pe liya</p>
+              </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Total Purchases</span>
                 <p className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">
@@ -351,13 +407,97 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
               <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
                 <span className="text-[10px] text-slate-400 uppercase font-semibold">Last Payment</span>
                 <p className="text-sm font-bold text-slate-700 dark:text-slate-300 font-mono mt-0.5">
-                  {selectedCustomer.lastPaymentDate ? formatDate(selectedCustomer.lastPaymentDate, false, settings.timeZone) : "None"}
+                  {selectedCustomer.lastPaymentDate
+                    ? formatDate(selectedCustomer.lastPaymentDate, false, settings.timeZone)
+                    : "None"}
                 </p>
+                {ledgerTotals.totalReturns > 0 && (
+                  <p className="text-[10px] text-purple-600 mt-0.5">
+                    Returns cut: {formatPKR(ledgerTotals.totalReturns)}
+                  </p>
+                )}
               </div>
+            </div>
+
+            {/* What credit customer took */}
+            <div className="mb-4 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+              <div className="px-3 py-2.5 bg-slate-50 dark:bg-slate-800/60 flex items-center justify-between gap-2">
+                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5 text-amber-600" />
+                  Credit pe kya kya liya (udhaar invoices)
+                </p>
+                <span className="text-[10px] font-mono text-slate-500">
+                  {customerCreditSales.length} open credit bill
+                  {customerCreditSales.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              {customerCreditSales.length === 0 ? (
+                <p className="px-3 py-4 text-xs text-slate-400">
+                  Is customer ke open credit sales nahi hain. Poora ledger neeche dekhein.
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-100 dark:divide-slate-800">
+                  <div className="max-h-48 overflow-y-auto">
+                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      Credit invoices
+                    </p>
+                    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {customerCreditSales.map((sale) => (
+                        <li key={sale._id} className="px-3 py-2 text-xs">
+                          <div className="flex justify-between gap-2">
+                            <span className="font-mono font-bold text-slate-900 dark:text-white">
+                              {sale.invoiceNumber}
+                            </span>
+                            <span className="font-mono font-bold text-rose-600">
+                              {formatPKR(sale.remainingAmount)}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 mt-0.5">
+                            {formatDate(sale.saleDate, false, settings.timeZone)} · Bill{" "}
+                            {formatPKR(sale.totalAmount)} · Paid {formatPKR(sale.paidAmount)}
+                          </p>
+                          <p className="text-[10px] text-slate-600 dark:text-slate-400 mt-0.5 line-clamp-2">
+                            {sale.items.map((i) => `${i.productName} (${i.quantity}x)`).join(", ")}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="max-h-48 overflow-y-auto">
+                    <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                      Items total (open credit)
+                    </p>
+                    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {creditItemsTaken.map((item) => (
+                        <li
+                          key={`${item.sku}-${item.productName}`}
+                          className="px-3 py-2 text-xs flex justify-between gap-3"
+                        >
+                          <div>
+                            <p className="font-semibold text-slate-800 dark:text-slate-200">
+                              {item.productName}
+                            </p>
+                            <p className="text-[10px] font-mono text-slate-400">
+                              {item.sku} · Qty {item.quantity}
+                            </p>
+                          </div>
+                          <span className="font-mono font-bold text-slate-900 dark:text-white shrink-0">
+                            {formatPKR(item.amount)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Ledger Transactions Table */}
             <div className="flex-1 overflow-x-auto overflow-y-auto">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-2 px-1">
+                Full Ledger / مکمل کھاتہ
+              </p>
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase tracking-wider">
@@ -385,7 +525,9 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
                   ) : (
                     ledgerEntries.map((entry) => (
                       <tr key={entry._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                        <td className="py-3 px-3 font-mono text-slate-500">{formatDate(entry.date, true, settings.timeZone)}</td>
+                        <td className="py-3 px-3 font-mono text-slate-500">
+                          {formatDate(entry.date, true, settings.timeZone)}
+                        </td>
                         <td className="py-3 px-3">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -393,6 +535,8 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
                                 ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                                 : entry.type === "PAYMENT"
                                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                : entry.type === "RETURN"
+                                ? "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300"
                                 : "bg-sky-100 text-sky-800 dark:bg-sky-950/60 dark:text-sky-300"
                             }`}
                           >
@@ -401,7 +545,9 @@ export function KhataView({ customers, settings, onRefresh }: KhataViewProps) {
                         </td>
                         <td className="py-3 px-3 font-medium text-slate-800 dark:text-slate-200">
                           <div>{entry.description}</div>
-                          {entry.notes && <span className="text-[10px] text-slate-400">{entry.notes}</span>}
+                          {entry.notes && (
+                            <span className="text-[10px] text-slate-400">{entry.notes}</span>
+                          )}
                         </td>
                         <td className="py-3 px-3 text-right font-mono font-semibold text-rose-600 dark:text-rose-400">
                           {entry.debit > 0 ? formatPKR(entry.debit) : "-"}
